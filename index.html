@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyDesk Online</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>MyDesk Online</h1>
+    <nav class="tab-bar">
+      <button class="tab-link active" data-target="home">Accueil</button>
+      <button class="tab-link" data-target="calendar">Agenda</button>
+      <button class="tab-link" data-target="mindmap">Cartes mentales</button>
+      <button class="tab-link" data-target="todo">To Do List</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="tab-panel active">
+      <h2>Configuration et sauvegarde</h2>
+      <p>
+        Sélectionnez un dossier local pour enregistrer vos données ou indiquez un chemin manuel.
+        Les données sont également conservées dans votre navigateur pour un accès rapide.
+      </p>
+      <div class="storage-controls">
+        <label for="storage-path">Chemin de sauvegarde</label>
+        <input type="text" id="storage-path" placeholder="/chemin/vers/mon/dossier">
+        <div class="storage-buttons">
+          <button id="choose-folder">Choisir un dossier</button>
+          <button id="export-json">Exporter les données (JSON)</button>
+          <button id="import-json">Importer un fichier JSON</button>
+        </div>
+        <input type="file" id="import-input" accept="application/json" hidden>
+        <p class="storage-status" id="storage-status"></p>
+      </div>
+    </section>
+
+    <section id="calendar" class="tab-panel">
+      <div class="calendar-header">
+        <div class="week-navigation">
+          <button id="prev-week" aria-label="Semaine précédente">◀</button>
+          <div class="week-label" id="week-label"></div>
+          <button id="next-week" aria-label="Semaine suivante">▶</button>
+        </div>
+        <div class="calendar-actions">
+          <button id="today-button">Aujourd'hui</button>
+          <span class="hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
+        </div>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </section>
+
+    <section id="mindmap" class="tab-panel">
+      <div class="mindmap-toolbar">
+        <button id="add-node">Ajouter une bulle</button>
+        <button id="delete-node">Supprimer</button>
+        <button id="link-nodes">Relier</button>
+        <label class="color-picker">
+          Couleur
+          <input type="color" id="node-color" value="#4e73df">
+        </label>
+      </div>
+      <div class="mindmap-canvas-wrapper">
+        <svg class="mindmap-links" id="mindmap-links"></svg>
+        <div class="mindmap-canvas" id="mindmap-canvas"></div>
+      </div>
+      <p class="hint">Astuce : faites glisser les bulles pour les déplacer, double-cliquez pour renommer.</p>
+    </section>
+
+    <section id="todo" class="tab-panel">
+      <div class="todo-header">
+        <button id="add-block">Ajouter un bloc</button>
+      </div>
+      <div class="todo-blocks" id="todo-blocks"></div>
+    </section>
+  </main>
+
+  <div class="modal" id="event-modal" hidden>
+    <div class="modal-content">
+      <h3>Nouvel évènement</h3>
+      <form id="event-form">
+        <label>
+          Titre
+          <input type="text" id="event-title" required>
+        </label>
+        <label>
+          Date et heure
+          <input type="datetime-local" id="event-datetime" required>
+        </label>
+        <label>
+          Durée (minutes)
+          <input type="number" id="event-duration" min="15" step="15" value="60">
+        </label>
+        <label>
+          Répétition
+          <select id="event-recurrence">
+            <option value="none">Aucune</option>
+            <option value="daily">Quotidienne</option>
+            <option value="weekly">Hebdomadaire</option>
+            <option value="monthly">Mensuelle</option>
+            <option value="yearly">Annuelle</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button type="submit">Enregistrer</button>
+          <button type="button" id="cancel-event">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
