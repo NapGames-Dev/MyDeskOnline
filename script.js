@@ -39,12 +39,15 @@ function startOfWeek(date) {
 }
 
 function formatDate(date, options = {}) {
-  return date.toLocaleDateString('fr-FR', {
-    weekday: options.weekday ?? 'long',
+  const formatOptions = {
+    weekday: options.weekday ? options.weekday : 'long',
     day: '2-digit',
-    month: 'short',
-    ...(options.year ? { year: 'numeric' } : {})
-  });
+    month: 'short'
+  };
+  if (options.year) {
+    formatOptions.year = 'numeric';
+  }
+  return date.toLocaleDateString('fr-FR', formatOptions);
 }
 
 function formatTime(date) {
@@ -55,7 +58,7 @@ function formatTime(date) {
 }
 
 function uid() {
-  if (window.crypto?.randomUUID) {
+  if (window.crypto && typeof window.crypto.randomUUID === 'function') {
     return window.crypto.randomUUID();
   }
   return `id-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
@@ -100,7 +103,7 @@ async function readStoredHandle() {
     const tx = db.transaction('handles', 'readonly');
     const store = tx.objectStore('handles');
     const req = store.get('data-folder');
-    req.onsuccess = () => resolve(req.result ?? null);
+    req.onsuccess = () => resolve(typeof req.result !== 'undefined' ? req.result : null);
     req.onerror = () => reject(req.error);
   });
 }
@@ -121,8 +124,11 @@ async function ensurePermission(handle) {
   if (!handle) return false;
   if (!handle.requestPermission) return false;
   const options = { mode: 'readwrite' };
-  if ((await handle.queryPermission?.(options)) === 'granted') {
-    return true;
+  if (handle.queryPermission) {
+    const status = await handle.queryPermission(options);
+    if (status === 'granted') {
+      return true;
+    }
   }
   const permission = await handle.requestPermission(options);
   return permission === 'granted';
@@ -140,15 +146,15 @@ function loadFromLocalStorage() {
       ...parsed,
       calendar: {
         ...cloneDefault().calendar,
-        ...(parsed.calendar ?? {})
+        ...(parsed.calendar ? parsed.calendar : {})
       },
       mindmap: {
         ...cloneDefault().mindmap,
-        ...(parsed.mindmap ?? {})
+        ...(parsed.mindmap ? parsed.mindmap : {})
       },
       todo: {
         ...cloneDefault().todo,
-        ...(parsed.todo ?? {})
+        ...(parsed.todo ? parsed.todo : {})
       }
     };
   } catch (error) {
@@ -223,15 +229,15 @@ async function initData() {
       ...fileData,
       calendar: {
         ...cloneDefault().calendar,
-        ...(fileData.calendar ?? appData.calendar)
+        ...(fileData.calendar ? fileData.calendar : appData.calendar)
       },
       mindmap: {
         ...cloneDefault().mindmap,
-        ...(fileData.mindmap ?? appData.mindmap)
+        ...(fileData.mindmap ? fileData.mindmap : appData.mindmap)
       },
       todo: {
         ...cloneDefault().todo,
-        ...(fileData.todo ?? appData.todo)
+        ...(fileData.todo ? fileData.todo : appData.todo)
       }
     };
     updateStorageStatus('Données chargées depuis le disque.', 'success');
@@ -262,7 +268,7 @@ function initStorageControls() {
   const importBtn = document.getElementById('import-json');
   const importInput = document.getElementById('import-input');
 
-  pathInput.value = appData.storagePath ?? '';
+  pathInput.value = appData.storagePath ? appData.storagePath : '';
   pathInput.addEventListener('input', () => {
     appData.storagePath = pathInput.value;
     saveData();
@@ -282,12 +288,12 @@ function initStorageControls() {
       }
       folderHandle = handle;
       await storeFolderHandle(handle);
-      appData.storagePath = handle.name ?? '';
+      appData.storagePath = handle && handle.name ? handle.name : '';
       saveData();
       pathInput.value = appData.storagePath;
       updateStorageStatus('Dossier de sauvegarde sélectionné.', 'success');
     } catch (error) {
-      if (error?.name !== 'AbortError') {
+      if (!error || error.name !== 'AbortError') {
         console.error(error);
         updateStorageStatus("Sélection du dossier annulée ou impossible.", 'error');
       }
@@ -311,7 +317,7 @@ function initStorageControls() {
   });
 
   importInput.addEventListener('change', async () => {
-    const file = importInput.files?.[0];
+    const file = importInput.files && importInput.files[0];
     if (!file) return;
     try {
       const text = await file.text();
@@ -321,15 +327,15 @@ function initStorageControls() {
         ...imported,
         calendar: {
           ...cloneDefault().calendar,
-          ...(imported.calendar ?? {})
+          ...(imported.calendar ? imported.calendar : {})
         },
         mindmap: {
           ...cloneDefault().mindmap,
-          ...(imported.mindmap ?? {})
+          ...(imported.mindmap ? imported.mindmap : {})
         },
         todo: {
           ...cloneDefault().todo,
-          ...(imported.todo ?? {})
+          ...(imported.todo ? imported.todo : {})
         }
       };
       if (appData.calendar.lastWeekStart) {
@@ -341,7 +347,7 @@ function initStorageControls() {
       renderCalendar();
       renderMindmap();
       renderTodo();
-      pathInput.value = appData.storagePath ?? '';
+      pathInput.value = appData.storagePath ? appData.storagePath : '';
       updateStorageStatus('Données importées avec succès.', 'success');
     } catch (error) {
       console.error(error);
@@ -431,7 +437,7 @@ function getOccurrencesForWeek(event) {
   const base = new Date(event.start);
   const baseDay = base.getDate();
   const baseMonth = base.getMonth();
-  const duration = Number(event.duration ?? 60);
+  const duration = Number(typeof event.duration === 'number' ? event.duration : 60);
   if (Number.isNaN(duration) || duration <= 0) {
     return occurrences;
   }
@@ -779,7 +785,7 @@ function renderMindmap() {
     }
   };
 
-  const fallbackId = selectedNodeId ?? null;
+  const fallbackId = selectedNodeId !== null ? selectedNodeId : null;
   if (!fallbackId) {
     setLinkMode(false);
     selectNode(null);
