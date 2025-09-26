@@ -49,7 +49,24 @@
           <span class="hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
         </div>
       </div>
-      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="calendar-content">
+        <div class="calendar-grid" id="calendar-grid"></div>
+        <aside class="event-types-panel">
+          <h3>Types d'évènements</h3>
+          <div class="event-type-list" id="event-type-list"></div>
+          <form class="event-type-form" id="event-type-form">
+            <label>
+              Nom du type
+              <input type="text" id="event-type-name" placeholder="Nom du type" required>
+            </label>
+            <label>
+              Couleur
+              <input type="color" id="event-type-color" value="#3b82f6">
+            </label>
+            <button type="submit">Ajouter un type</button>
+          </form>
+        </aside>
+      </div>
     </section>
 
     <section id="mindmap" class="tab-panel">
@@ -62,9 +79,20 @@
           <input type="color" id="node-color" value="#4e73df">
         </label>
       </div>
-      <div class="mindmap-canvas-wrapper">
-        <svg class="mindmap-links" id="mindmap-links"></svg>
-        <div class="mindmap-canvas" id="mindmap-canvas"></div>
+      <div class="mindmap-layout">
+        <div class="mindmap-canvas-wrapper">
+          <svg class="mindmap-links" id="mindmap-links"></svg>
+          <div class="mindmap-canvas" id="mindmap-canvas"></div>
+        </div>
+        <aside class="mindmap-sidebar">
+          <h3>Cartes mentales</h3>
+          <ul class="mindmap-list" id="mindmap-list"></ul>
+          <div class="mindmap-actions">
+            <button id="add-map">Nouvelle carte</button>
+            <button id="rename-map">Renommer</button>
+            <button id="delete-map">Supprimer la carte</button>
+          </div>
+        </aside>
       </div>
       <p class="hint">Astuce : faites glisser les bulles pour les déplacer, double-cliquez pour renommer.</p>
     </section>
@@ -92,6 +120,16 @@
         <label>
           Durée (minutes)
           <input type="number" id="event-duration" min="15" step="15" value="60">
+        </label>
+        <label>
+          Type d'évènement
+          <select id="event-type">
+            <option value="">Aucun</option>
+          </select>
+        </label>
+        <label>
+          Couleur
+          <input type="color" id="event-color" value="#10b981">
         </label>
         <label>
           Répétition
