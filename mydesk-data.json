@@ -1,0 +1,56 @@
+{
+  "storagePath": "MyDeskOnline",
+  "calendar": {
+    "events": [
+      {
+        "id": "816a8ef5-c73b-4b46-887c-cae3780424fb",
+        "title": "Se lever",
+        "start": "2025-09-26T06:00",
+        "duration": 60,
+        "recurrence": "daily"
+      }
+    ],
+    "lastWeekStart": "2025-09-21T22:00:00.000Z"
+  },
+  "mindmap": {
+    "nodes": [
+      {
+        "id": "2f8bed3f-3e6e-4b6d-8019-b9e52ed9ed17",
+        "title": "A",
+        "color": "#4e73df",
+        "x": 129,
+        "y": 170
+      },
+      {
+        "id": "19abada1-d9f3-4895-aa2d-7bfd533545fe",
+        "title": "B",
+        "color": "#4e73df",
+        "x": 114,
+        "y": 237
+      },
+      {
+        "id": "ed1a2011-5858-48ed-a36c-5dde71ca6a54",
+        "title": "Y = A.B",
+        "color": "#4e73df",
+        "x": 306,
+        "y": 198
+      }
+    ],
+    "links": []
+  },
+  "todo": {
+    "blocks": [
+      {
+        "id": "9a4ee31f-fb35-4e0a-9262-8f56223fafeb",
+        "title": "To Do list quotidien",
+        "items": [
+          {
+            "id": "c4006239-07a9-40c9-9e88-a2780a800da7",
+            "text": "Faire 1h de sport",
+            "done": false
+          }
+        ]
+      }
+    ]
+  }
+}
