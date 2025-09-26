@@ -4,16 +4,21 @@ const defaultData = {
   storagePath: '',
   calendar: {
     events: [],
-    lastWeekStart: null
+    lastWeekStart: null,
+    types: []
   },
   mindmap: {
-    nodes: [],
-    links: []
+    maps: [],
+    activeMapId: null
   },
   todo: {
     blocks: []
   }
 };
+
+const DEFAULT_EVENT_COLOR = '#10b981';
+const MIN_EVENT_DURATION = 15;
+const EVENT_DURATION_STEP = 15;
 
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
@@ -24,6 +29,8 @@ let linkSourceId = null;
 let folderHandle = null;
 let handleDBPromise = null;
 let saveTimer = null;
+let calendarHourHeight = 48;
+let resizeState = null;
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(defaultData));
@@ -213,6 +220,122 @@ function saveData() {
   scheduleFileSave();
 }
 
+function migrateData() {
+  if (!appData.calendar || typeof appData.calendar !== 'object') {
+    appData.calendar = cloneDefault().calendar;
+  }
+  if (!Array.isArray(appData.calendar.events)) {
+    appData.calendar.events = [];
+  }
+  if (!Array.isArray(appData.calendar.types)) {
+    appData.calendar.types = [];
+  }
+
+  appData.calendar.types = appData.calendar.types.map((type, index) => {
+    const normalized = {
+      id: type && type.id ? type.id : uid(),
+      name: type && type.name ? type.name : `Type ${index + 1}`,
+      color: type && type.color ? type.color : DEFAULT_EVENT_COLOR
+    };
+    return normalized;
+  });
+
+  const typeMap = new Map(appData.calendar.types.map((type) => [type.id, type]));
+
+  appData.calendar.events = appData.calendar.events.map((event) => {
+    const normalized = { ...event };
+    normalized.id = normalized.id ? normalized.id : uid();
+    normalized.recurrence = normalized.recurrence ? normalized.recurrence : 'none';
+    normalized.duration = Number(normalized.duration);
+    if (Number.isNaN(normalized.duration) || normalized.duration <= 0) {
+      normalized.duration = 60;
+    }
+    if (normalized.duration < MIN_EVENT_DURATION) {
+      normalized.duration = MIN_EVENT_DURATION;
+    }
+    if (normalized.typeId && !typeMap.has(normalized.typeId)) {
+      normalized.typeId = '';
+    }
+    if (!normalized.color) {
+      if (normalized.typeId && typeMap.has(normalized.typeId)) {
+        normalized.color = typeMap.get(normalized.typeId).color;
+      } else {
+        normalized.color = DEFAULT_EVENT_COLOR;
+      }
+    }
+    return normalized;
+  });
+
+  if (!appData.mindmap || typeof appData.mindmap !== 'object') {
+    appData.mindmap = cloneDefault().mindmap;
+  }
+
+  if (Array.isArray(appData.mindmap.nodes) || Array.isArray(appData.mindmap.links)) {
+    const nodes = Array.isArray(appData.mindmap.nodes) ? appData.mindmap.nodes : [];
+    const links = Array.isArray(appData.mindmap.links) ? appData.mindmap.links : [];
+    const defaultId = uid();
+    appData.mindmap = {
+      maps: [
+        {
+          id: defaultId,
+          name: 'Carte 1',
+          nodes,
+          links
+        }
+      ],
+      activeMapId: defaultId
+    };
+  }
+
+  if (!Array.isArray(appData.mindmap.maps)) {
+    appData.mindmap.maps = [];
+  }
+
+  appData.mindmap.maps = appData.mindmap.maps.map((map, index) => {
+    const nodeIds = new Set();
+    const nodes = Array.isArray(map && map.nodes)
+      ? map.nodes.map((node, nodeIndex) => {
+          const normalizedNode = {
+            id: node && node.id ? node.id : uid(),
+            title: node && node.title ? node.title : `Idée ${nodeIndex + 1}`,
+            color: node && node.color ? node.color : '#4e73df',
+            x: typeof node === 'object' && typeof node.x === 'number' ? node.x : 100,
+            y: typeof node === 'object' && typeof node.y === 'number' ? node.y : 100
+          };
+          nodeIds.add(normalizedNode.id);
+          return normalizedNode;
+        })
+      : [];
+
+    const links = Array.isArray(map && map.links)
+      ? map.links
+          .map((link) => ({
+            id: link && link.id ? link.id : uid(),
+            from: link && link.from ? link.from : null,
+            to: link && link.to ? link.to : null
+          }))
+          .filter((link) => link.from && link.to && nodeIds.has(link.from) && nodeIds.has(link.to))
+      : [];
+
+    return {
+      id: map && map.id ? map.id : uid(),
+      name: map && map.name ? map.name : `Carte ${index + 1}`,
+      nodes,
+      links
+    };
+  });
+
+  if (appData.mindmap.maps.length === 0) {
+    const fallbackId = uid();
+    appData.mindmap.maps.push({ id: fallbackId, name: 'Carte 1', nodes: [], links: [] });
+    appData.mindmap.activeMapId = fallbackId;
+  }
+
+  if (!appData.mindmap.activeMapId || !appData.mindmap.maps.some((map) => map.id === appData.mindmap.activeMapId)) {
+    appData.mindmap.activeMapId = appData.mindmap.maps[0].id;
+  }
+}
+
 function updateStorageStatus(message, type = 'info') {
   const status = document.getElementById('storage-status');
   if (!status) return;
@@ -244,6 +367,7 @@ async function initData() {
   } else {
     updateStorageStatus('Données chargées depuis le navigateur.', 'info');
   }
+  migrateData();
   if (appData.calendar.lastWeekStart) {
     currentWeekStart = startOfWeek(new Date(appData.calendar.lastWeekStart));
   }
@@ -338,6 +462,7 @@ function initStorageControls() {
           ...(imported.todo ? imported.todo : {})
         }
       };
+      migrateData();
       if (appData.calendar.lastWeekStart) {
         currentWeekStart = startOfWeek(new Date(appData.calendar.lastWeekStart));
       } else {
@@ -345,6 +470,8 @@ function initStorageControls() {
       }
       saveData();
       renderCalendar();
+      renderEventTypes();
+      renderMindmapList();
       renderMindmap();
       renderTodo();
       pathInput.value = appData.storagePath ? appData.storagePath : '';
@@ -379,7 +506,9 @@ function renderCalendar() {
   days.forEach((day) => {
     const header = document.createElement('div');
     header.className = 'day-header';
-    header.innerHTML = `<span>${day.toLocaleDateString('fr-FR', { weekday: 'short' })}</span><strong>${day.getDate()}</strong>`;
+    const weekday = day.toLocaleDateString('fr-FR', { weekday: 'long' });
+    const formattedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+    header.innerHTML = `<span>${formattedWeekday}</span><strong>${day.getDate()}</strong>`;
     if (day.getTime() === today.getTime()) {
       header.classList.add('today');
     }
@@ -429,6 +558,132 @@ function updateWeekLabel() {
   label.textContent = `${startText} – ${endText}`;
 }
 
+function getEventTypeById(id) {
+  if (!id) return null;
+  return appData.calendar.types.find((type) => type.id === id) || null;
+}
+
+function getEventColor(event) {
+  if (!event) return DEFAULT_EVENT_COLOR;
+  if (event.color) {
+    return event.color;
+  }
+  const type = getEventTypeById(event.typeId);
+  if (type) {
+    return type.color;
+  }
+  return DEFAULT_EVENT_COLOR;
+}
+
+function updateEventsForTypeColor(type, previousColor) {
+  appData.calendar.events.forEach((event) => {
+    if (event.typeId === type.id) {
+      if (!event.color || event.color === previousColor) {
+        event.color = type.color;
+      }
+    }
+  });
+}
+
+function updateEventTypeSelect(selectedId) {
+  const select = document.getElementById('event-type');
+  if (!select) return;
+  const current = typeof selectedId === 'string' ? selectedId : select.value;
+  select.innerHTML = '';
+  const noneOption = document.createElement('option');
+  noneOption.value = '';
+  noneOption.textContent = 'Aucun';
+  select.appendChild(noneOption);
+  appData.calendar.types.forEach((type) => {
+    const option = document.createElement('option');
+    option.value = type.id;
+    option.textContent = type.name || 'Sans titre';
+    select.appendChild(option);
+  });
+  if (current && appData.calendar.types.some((type) => type.id === current)) {
+    select.value = current;
+  } else {
+    select.value = '';
+  }
+}
+
+function removeEventType(typeId) {
+  appData.calendar.types = appData.calendar.types.filter((type) => type.id !== typeId);
+  appData.calendar.events.forEach((event) => {
+    if (event.typeId === typeId) {
+      event.typeId = '';
+    }
+  });
+  saveData();
+  renderEventTypes();
+  renderCalendarEvents();
+}
+
+function renderEventTypes() {
+  const list = document.getElementById('event-type-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (appData.calendar.types.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'event-type-empty';
+    empty.textContent = 'Ajoutez un type pour colorer vos évènements.';
+    list.appendChild(empty);
+  } else {
+    appData.calendar.types.forEach((type) => {
+      const item = document.createElement('div');
+      item.className = 'event-type-item';
+
+      const colorInput = document.createElement('input');
+      colorInput.type = 'color';
+      colorInput.value = type.color || DEFAULT_EVENT_COLOR;
+      colorInput.addEventListener('input', () => {
+        const previousColor = type.color;
+        type.color = colorInput.value;
+        updateEventsForTypeColor(type, previousColor);
+        saveData();
+        renderCalendarEvents();
+      });
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = type.name || 'Sans titre';
+      nameInput.addEventListener('input', () => {
+        type.name = nameInput.value;
+        updateEventTypeSelect(type.id);
+        saveData();
+      });
+      nameInput.addEventListener('blur', () => {
+        const trimmed = nameInput.value.trim();
+        if (!trimmed) {
+          type.name = 'Type sans nom';
+          nameInput.value = type.name;
+        } else {
+          type.name = trimmed;
+        }
+        updateEventTypeSelect(type.id);
+        saveData();
+        renderEventTypes();
+      });
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = '✕';
+      deleteBtn.addEventListener('click', () => {
+        if (!confirm('Supprimer ce type d\'évènement ?')) return;
+        removeEventType(type.id);
+      });
+
+      item.appendChild(colorInput);
+      item.appendChild(nameInput);
+      item.appendChild(deleteBtn);
+      list.appendChild(item);
+    });
+  }
+
+  updateEventTypeSelect();
+}
+
 function getOccurrencesForWeek(event) {
   const occurrences = [];
   const weekStart = new Date(currentWeekStart);
@@ -444,7 +699,7 @@ function getOccurrencesForWeek(event) {
 
   if (!event.recurrence || event.recurrence === 'none') {
     if (base >= weekStart && base < weekEnd) {
-      occurrences.push({ start: base, duration, id: event.id, title: event.title, recurrence: event.recurrence });
+      occurrences.push({ start: new Date(base), duration, sourceEvent: event });
     }
     return occurrences;
   }
@@ -497,7 +752,7 @@ function getOccurrencesForWeek(event) {
 
   while (occurrence < weekEnd && iterations < maxIterations) {
     if (occurrence >= weekStart) {
-      occurrences.push({ start: new Date(occurrence), duration, id: event.id, title: event.title, recurrence: event.recurrence });
+      occurrences.push({ start: new Date(occurrence), duration, sourceEvent: event });
     }
     iterations += 1;
     switch (event.recurrence) {
@@ -535,38 +790,139 @@ function renderCalendarEvents() {
     cell.querySelectorAll('.event').forEach((node) => node.remove());
   });
 
-  const hourCellHeight = (() => {
-    const anyCell = calendarCellMap.values().next().value;
-    return anyCell ? anyCell.getBoundingClientRect().height : 48;
-  })();
+  const anyCell = calendarCellMap.values().next().value;
+  calendarHourHeight = anyCell ? anyCell.getBoundingClientRect().height : 48;
 
-  const weekEvents = appData.calendar.events.flatMap((event) => getOccurrencesForWeek(event));
+  const weekEvents = appData.calendar.events
+    .flatMap((event) => getOccurrencesForWeek(event))
+    .sort((a, b) => a.start - b.start);
+
   weekEvents.forEach((occ) => {
-    const dateKey = new Date(occ.start);
-    const date = new Date(dateKey);
-    date.setHours(0, 0, 0, 0);
-    const hour = occ.start.getHours();
-    const minuteOffset = occ.start.getMinutes();
-    const key = `${date.toISOString()}-${hour}`;
+    const startDate = new Date(occ.start);
+    const dayStart = new Date(startDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const hour = startDate.getHours();
+    const key = `${dayStart.toISOString()}-${hour}`;
     const cell = calendarCellMap.get(key);
     if (!cell) return;
+
     const eventEl = document.createElement('div');
     eventEl.className = 'event';
-    eventEl.innerHTML = `
-      <div class="title">${occ.title || 'Nouvel évènement'}</div>
-      <div class="time-range">${formatTime(occ.start)} – ${formatTime(new Date(occ.start.getTime() + occ.duration * 60000))}</div>
-    `;
-    eventEl.style.top = `${(minuteOffset / 60) * hourCellHeight}px`;
-    eventEl.style.height = `${(occ.duration / 60) * hourCellHeight}px`;
-    eventEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const confirmDelete = confirm('Supprimer cet évènement et ses répétitions ?');
-      if (confirmDelete) {
-        deleteEvent(occ.id);
-      }
+    eventEl.dataset.eventId = occ.sourceEvent.id;
+    eventEl.style.setProperty('--event-color', getEventColor(occ.sourceEvent));
+
+    const header = document.createElement('div');
+    header.className = 'event-header';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'title';
+    titleEl.textContent = occ.sourceEvent.title || 'Nouvel évènement';
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'delete-event';
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (!confirm('Supprimer cet évènement et ses répétitions ?')) return;
+      deleteEvent(occ.sourceEvent.id);
     });
+    header.appendChild(titleEl);
+    header.appendChild(deleteBtn);
+
+    const timeRange = document.createElement('div');
+    timeRange.className = 'time-range';
+    const endTime = new Date(startDate.getTime() + occ.duration * 60000);
+    timeRange.textContent = `${formatTime(startDate)} – ${formatTime(endTime)}`;
+
+    eventEl.appendChild(header);
+    eventEl.appendChild(timeRange);
+
+    eventEl.style.top = `${(startDate.getMinutes() / 60) * calendarHourHeight}px`;
+    eventEl.style.height = `${(occ.duration / 60) * calendarHourHeight}px`;
+
+    eventEl.addEventListener('dblclick', (event) => {
+      event.stopPropagation();
+      openEventModal({ event: occ.sourceEvent, occurrenceStart: startDate });
+    });
+
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle bottom';
+    resizeHandle.addEventListener('pointerdown', (event) => {
+      startDurationResize(event, occ, eventEl, resizeHandle);
+    });
+    eventEl.appendChild(resizeHandle);
+
     cell.appendChild(eventEl);
   });
+}
+
+function startDurationResize(pointerEvent, occurrence, eventEl, handle) {
+  pointerEvent.preventDefault();
+  pointerEvent.stopPropagation();
+  const sourceEvent = occurrence.sourceEvent;
+  const originalDuration = Number(sourceEvent.duration) || MIN_EVENT_DURATION;
+  resizeState = {
+    pointerId: pointerEvent.pointerId,
+    handle,
+    eventEl,
+    sourceEvent,
+    occurrenceStart: new Date(occurrence.start),
+    originalDuration,
+    previewDuration: originalDuration,
+    startY: pointerEvent.clientY
+  };
+  handle.setPointerCapture(pointerEvent.pointerId);
+  handle.addEventListener('pointermove', handleDurationResize);
+  handle.addEventListener('pointerup', finishDurationResize);
+  handle.addEventListener('pointercancel', finishDurationResize);
+}
+
+function handleDurationResize(event) {
+  if (!resizeState) return;
+  const deltaPixels = event.clientY - resizeState.startY;
+  const minutesPerPixel = 60 / calendarHourHeight;
+  const rawMinutes = deltaPixels * minutesPerPixel;
+  const steppedMinutes = Math.round(rawMinutes / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
+  const startMinutes = resizeState.occurrenceStart.getHours() * 60 + resizeState.occurrenceStart.getMinutes();
+  const available = (24 * 60) - startMinutes;
+  let newDuration = resizeState.originalDuration + steppedMinutes;
+  if (available <= 0) {
+    newDuration = resizeState.originalDuration;
+  } else {
+    const minDuration = Math.min(MIN_EVENT_DURATION, available);
+    if (newDuration < minDuration) {
+      newDuration = minDuration;
+    }
+    if (newDuration > available) {
+      newDuration = available;
+    }
+    const stepMinimum = Math.min(EVENT_DURATION_STEP, available);
+    if (newDuration < stepMinimum) {
+      newDuration = stepMinimum;
+    }
+  }
+  resizeState.previewDuration = newDuration;
+  const height = (newDuration / 60) * calendarHourHeight;
+  resizeState.eventEl.style.height = `${height}px`;
+  const timeRange = resizeState.eventEl.querySelector('.time-range');
+  if (timeRange) {
+    const endDate = new Date(resizeState.occurrenceStart.getTime() + newDuration * 60000);
+    timeRange.textContent = `${formatTime(resizeState.occurrenceStart)} – ${formatTime(endDate)}`;
+  }
+}
+
+function finishDurationResize(event) {
+  if (!resizeState) return;
+  resizeState.handle.releasePointerCapture(resizeState.pointerId);
+  resizeState.handle.removeEventListener('pointermove', handleDurationResize);
+  resizeState.handle.removeEventListener('pointerup', finishDurationResize);
+  resizeState.handle.removeEventListener('pointercancel', finishDurationResize);
+  const finalDuration = resizeState.previewDuration;
+  if (finalDuration !== resizeState.originalDuration) {
+    resizeState.sourceEvent.duration = finalDuration;
+    saveData();
+  }
+  resizeState = null;
+  renderCalendar();
 }
 
 function deleteEvent(eventId) {
@@ -575,46 +931,123 @@ function deleteEvent(eventId) {
   renderCalendar();
 }
 
-function openEventModal({ start }) {
+function openEventModal({ start, event: existingEvent = null, occurrenceStart = null }) {
   const modal = document.getElementById('event-modal');
   const form = document.getElementById('event-form');
   const titleInput = document.getElementById('event-title');
   const datetimeInput = document.getElementById('event-datetime');
   const durationInput = document.getElementById('event-duration');
   const recurrenceInput = document.getElementById('event-recurrence');
+  const typeInput = document.getElementById('event-type');
+  const colorInput = document.getElementById('event-color');
+  const modalTitle = modal.querySelector('h3');
 
-  titleInput.value = '';
-  const localISO = new Date(start.getTime() - start.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-  datetimeInput.value = localISO;
-  durationInput.value = 60;
-  recurrenceInput.value = 'none';
+  const baseDate = existingEvent
+    ? (occurrenceStart ? new Date(occurrenceStart) : new Date(existingEvent.start))
+    : start instanceof Date
+      ? new Date(start)
+      : new Date();
+  const localized = new Date(baseDate.getTime() - baseDate.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+
+  updateEventTypeSelect(existingEvent && existingEvent.typeId ? existingEvent.typeId : '');
+
+  if (existingEvent) {
+    modalTitle.textContent = 'Modifier l\'évènement';
+    titleInput.value = existingEvent.title || '';
+    datetimeInput.value = localized;
+    durationInput.value = existingEvent.duration || 60;
+    recurrenceInput.value = existingEvent.recurrence || 'none';
+    typeInput.value = existingEvent.typeId || '';
+    const type = getEventTypeById(existingEvent.typeId);
+    colorInput.value = existingEvent.color || (type ? type.color : DEFAULT_EVENT_COLOR);
+    modal.dataset.mode = 'edit';
+    modal.dataset.eventId = existingEvent.id;
+  } else {
+    modalTitle.textContent = 'Nouvel évènement';
+    titleInput.value = '';
+    datetimeInput.value = localized;
+    durationInput.value = 60;
+    recurrenceInput.value = 'none';
+    typeInput.value = '';
+    colorInput.value = DEFAULT_EVENT_COLOR;
+    modal.dataset.mode = 'create';
+    modal.dataset.eventId = '';
+  }
 
   modal.hidden = false;
-  modal.dataset.mode = 'create';
 
   const cancelButton = document.getElementById('cancel-event');
   cancelButton.onclick = () => {
     modal.hidden = true;
   };
 
-  form.onsubmit = (event) => {
-    event.preventDefault();
+  typeInput.onchange = () => {
+    const selectedType = getEventTypeById(typeInput.value);
+    if (selectedType) {
+      colorInput.value = selectedType.color;
+    }
+  };
+
+  form.onsubmit = (submitEvent) => {
+    submitEvent.preventDefault();
     const title = titleInput.value.trim();
     const datetimeValue = datetimeInput.value;
-    const duration = Number(durationInput.value) || 60;
     if (!datetimeValue) return;
     const startDate = new Date(datetimeValue);
     if (Number.isNaN(startDate.getTime())) {
       return;
     }
-    const newEvent = {
-      id: uid(),
-      title: title || 'Nouvel évènement',
-      start: datetimeValue,
-      duration,
-      recurrence: recurrenceInput.value
-    };
-    appData.calendar.events.push(newEvent);
+    let duration = Number(durationInput.value);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      duration = 60;
+    }
+    duration = Math.round(duration / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
+    if (duration < EVENT_DURATION_STEP) {
+      duration = EVENT_DURATION_STEP;
+    }
+    const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+    const available = (24 * 60) - startMinutes;
+    if (available > 0) {
+      const minDuration = Math.min(MIN_EVENT_DURATION, available);
+      if (duration < minDuration) {
+        duration = minDuration;
+      }
+      if (duration > available) {
+        duration = available;
+      }
+      if (duration < EVENT_DURATION_STEP && available >= EVENT_DURATION_STEP) {
+        duration = EVENT_DURATION_STEP;
+      }
+    }
+    durationInput.value = duration;
+    const recurrence = recurrenceInput.value;
+    const typeId = typeInput.value;
+    const color = colorInput.value || DEFAULT_EVENT_COLOR;
+
+    if (modal.dataset.mode === 'edit' && modal.dataset.eventId) {
+      const targetEvent = appData.calendar.events.find((evt) => evt.id === modal.dataset.eventId);
+      if (targetEvent) {
+        targetEvent.title = title || 'Nouvel évènement';
+        targetEvent.start = datetimeValue;
+        targetEvent.duration = duration;
+        targetEvent.recurrence = recurrence;
+        targetEvent.typeId = typeId;
+        targetEvent.color = color;
+      }
+    } else {
+      const newEvent = {
+        id: uid(),
+        title: title || 'Nouvel évènement',
+        start: datetimeValue,
+        duration,
+        recurrence,
+        typeId,
+        color
+      };
+      appData.calendar.events.push(newEvent);
+    }
     saveData();
     modal.hidden = true;
     renderCalendar();
@@ -623,6 +1056,22 @@ function openEventModal({ start }) {
 
 function initCalendar() {
   renderCalendar();
+  renderEventTypes();
+  const typeForm = document.getElementById('event-type-form');
+  const typeNameInput = document.getElementById('event-type-name');
+  const typeColorInput = document.getElementById('event-type-color');
+  if (typeForm) {
+    typeForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = typeNameInput.value.trim();
+      if (!name) return;
+      const color = typeColorInput.value || DEFAULT_EVENT_COLOR;
+      appData.calendar.types.push({ id: uid(), name, color });
+      typeNameInput.value = '';
+      saveData();
+      renderEventTypes();
+    });
+  }
   document.getElementById('prev-week').addEventListener('click', () => {
     currentWeekStart.setDate(currentWeekStart.getDate() - 7);
     appData.calendar.lastWeekStart = currentWeekStart.toISOString();
@@ -660,12 +1109,69 @@ function initCalendar() {
   });
 }
 
+function getActiveMindmap() {
+  let mutated = false;
+  if (!appData.mindmap || !Array.isArray(appData.mindmap.maps)) {
+    const fallbackId = uid();
+    appData.mindmap = { maps: [{ id: fallbackId, name: 'Carte 1', nodes: [], links: [] }], activeMapId: fallbackId };
+    mutated = true;
+  }
+  if (appData.mindmap.maps.length === 0) {
+    const fallbackId = uid();
+    appData.mindmap.maps.push({ id: fallbackId, name: 'Carte 1', nodes: [], links: [] });
+    appData.mindmap.activeMapId = fallbackId;
+    mutated = true;
+  }
+  let active = appData.mindmap.maps.find((map) => map.id === appData.mindmap.activeMapId);
+  if (!active) {
+    appData.mindmap.activeMapId = appData.mindmap.maps[0].id;
+    active = appData.mindmap.maps[0];
+    mutated = true;
+  }
+  if (mutated) {
+    saveData();
+  }
+  return active;
+}
+
+function setActiveMindmap(mapId) {
+  if (!appData.mindmap.maps.some((map) => map.id === mapId)) return;
+  appData.mindmap.activeMapId = mapId;
+  selectedNodeId = null;
+  setLinkMode(false);
+  renderMindmapList();
+  renderMindmap();
+  saveData();
+}
+
+function renderMindmapList() {
+  const list = document.getElementById('mindmap-list');
+  if (!list) return;
+  const active = getActiveMindmap();
+  list.innerHTML = '';
+  appData.mindmap.maps.forEach((map) => {
+    const item = document.createElement('li');
+    item.classList.toggle('active', map.id === active.id);
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = map.name || 'Carte sans nom';
+    item.appendChild(nameSpan);
+    item.addEventListener('click', () => {
+      if (appData.mindmap.activeMapId === map.id) return;
+      setActiveMindmap(map.id);
+    });
+    list.appendChild(item);
+  });
+}
+
 function initMindmap() {
   const addBtn = document.getElementById('add-node');
   const deleteBtn = document.getElementById('delete-node');
   const linkBtn = document.getElementById('link-nodes');
   const colorInput = document.getElementById('node-color');
   const canvas = document.getElementById('mindmap-canvas');
+  const addMapBtn = document.getElementById('add-map');
+  const renameMapBtn = document.getElementById('rename-map');
+  const deleteMapBtn = document.getElementById('delete-map');
 
   function addNode() {
     const rect = canvas.getBoundingClientRect();
@@ -676,7 +1182,8 @@ function initMindmap() {
       x: rect.width / 2 - 60,
       y: rect.height / 2 - 40
     };
-    appData.mindmap.nodes.push(node);
+    const map = getActiveMindmap();
+    map.nodes.push(node);
     saveData();
     renderMindmap();
     selectNode(node.id);
@@ -686,8 +1193,9 @@ function initMindmap() {
 
   deleteBtn.addEventListener('click', () => {
     if (!selectedNodeId) return;
-    appData.mindmap.nodes = appData.mindmap.nodes.filter((node) => node.id !== selectedNodeId);
-    appData.mindmap.links = appData.mindmap.links.filter((link) => link.from !== selectedNodeId && link.to !== selectedNodeId);
+    const map = getActiveMindmap();
+    map.nodes = map.nodes.filter((node) => node.id !== selectedNodeId);
+    map.links = map.links.filter((link) => link.from !== selectedNodeId && link.to !== selectedNodeId);
     selectedNodeId = null;
     setLinkMode(false);
     saveData();
@@ -701,14 +1209,60 @@ function initMindmap() {
 
   colorInput.addEventListener('input', () => {
     if (!selectedNodeId) return;
-    const node = appData.mindmap.nodes.find((n) => n.id === selectedNodeId);
+    const map = getActiveMindmap();
+    const node = map.nodes.find((n) => n.id === selectedNodeId);
     if (!node) return;
     node.color = colorInput.value;
     saveData();
     renderMindmap();
   });
 
+  if (addMapBtn) {
+    addMapBtn.addEventListener('click', () => {
+      const newMap = {
+        id: uid(),
+        name: `Carte ${appData.mindmap.maps.length + 1}`,
+        nodes: [],
+        links: []
+      };
+      appData.mindmap.maps.push(newMap);
+      setActiveMindmap(newMap.id);
+    });
+  }
+
+  if (renameMapBtn) {
+    renameMapBtn.addEventListener('click', () => {
+      const map = getActiveMindmap();
+      const newName = prompt('Nom de la carte', map.name || 'Carte sans nom');
+      if (newName === null) return;
+      const trimmed = newName.trim();
+      map.name = trimmed || 'Carte sans nom';
+      saveData();
+      renderMindmapList();
+    });
+  }
+
+  if (deleteMapBtn) {
+    deleteMapBtn.addEventListener('click', () => {
+      if (appData.mindmap.maps.length <= 1) {
+        alert('Impossible de supprimer la dernière carte.');
+        return;
+      }
+      const map = getActiveMindmap();
+      if (!confirm(`Supprimer la carte "${map.name}" ?`)) return;
+      appData.mindmap.maps = appData.mindmap.maps.filter((m) => m.id !== map.id);
+      const fallback = getActiveMindmap();
+      appData.mindmap.activeMapId = fallback.id;
+      selectedNodeId = null;
+      setLinkMode(false);
+      saveData();
+      renderMindmapList();
+      renderMindmap();
+    });
+  }
+
   renderMindmap();
+  renderMindmapList();
   selectNode(selectedNodeId);
   syncLinkButton();
 
@@ -721,8 +1275,9 @@ function renderMindmap() {
   const canvas = document.getElementById('mindmap-canvas');
   const linksLayer = document.getElementById('mindmap-links');
   if (!canvas || !linksLayer) return;
+  const map = getActiveMindmap();
 
-  if (selectedNodeId && !appData.mindmap.nodes.some((node) => node.id === selectedNodeId)) {
+  if (selectedNodeId && !map.nodes.some((node) => node.id === selectedNodeId)) {
     selectedNodeId = null;
   }
 
@@ -731,7 +1286,7 @@ function renderMindmap() {
   linksLayer.setAttribute('width', canvas.clientWidth);
   linksLayer.setAttribute('height', canvas.clientHeight);
 
-  appData.mindmap.nodes.forEach((node) => {
+  map.nodes.forEach((node) => {
     const nodeEl = document.createElement('div');
     nodeEl.className = 'mindmap-node';
     if (node.id === selectedNodeId) {
@@ -746,9 +1301,9 @@ function renderMindmap() {
     nodeEl.addEventListener('click', (event) => {
       event.stopPropagation();
       if (linkMode && linkSourceId && linkSourceId !== node.id) {
-        const exists = appData.mindmap.links.some((link) => (link.from === linkSourceId && link.to === node.id) || (link.from === node.id && link.to === linkSourceId));
+        const exists = map.links.some((link) => (link.from === linkSourceId && link.to === node.id) || (link.from === node.id && link.to === linkSourceId));
         if (!exists) {
-          appData.mindmap.links.push({ id: uid(), from: linkSourceId, to: node.id });
+          map.links.push({ id: uid(), from: linkSourceId, to: node.id });
           saveData();
           renderMindmap();
         }
@@ -769,7 +1324,7 @@ function renderMindmap() {
   });
 
   const linesFragment = document.createDocumentFragment();
-  appData.mindmap.links.forEach(() => {
+  map.links.forEach(() => {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('stroke', 'rgba(79, 70, 229, 0.45)');
     line.setAttribute('stroke-width', '3');
@@ -830,6 +1385,7 @@ function selectNode(nodeId) {
   const colorInput = document.getElementById('node-color');
   const deleteBtn = document.getElementById('delete-node');
   const linkBtn = document.getElementById('link-nodes');
+  const map = getActiveMindmap();
   if (!nodeId) {
     colorInput.disabled = true;
     deleteBtn.disabled = true;
@@ -839,7 +1395,7 @@ function selectNode(nodeId) {
     colorInput.disabled = false;
     deleteBtn.disabled = false;
     linkBtn.disabled = false;
-    const node = appData.mindmap.nodes.find((n) => n.id === nodeId);
+    const node = map.nodes.find((n) => n.id === nodeId);
     if (node) {
       colorInput.value = node.color || '#4e73df';
     }
@@ -886,8 +1442,9 @@ function updateLinkPositions() {
   if (!linksLayer || !canvas) return;
   const lines = Array.from(linksLayer.querySelectorAll('line'));
   const canvasRect = canvas.getBoundingClientRect();
+  const map = getActiveMindmap();
   lines.forEach((line, index) => {
-    const link = appData.mindmap.links[index];
+    const link = map.links[index];
     if (!link) return;
     const fromEl = canvas.querySelector(`.mindmap-node[data-id="${link.from}"]`);
     const toEl = canvas.querySelector(`.mindmap-node[data-id="${link.to}"]`);
