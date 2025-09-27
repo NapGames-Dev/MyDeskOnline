@@ -804,8 +804,22 @@ function renderCalendarEvents() {
     layer.querySelectorAll('.event').forEach((node) => node.remove());
   });
 
+  const sampleLayerEntry = calendarDayColumnMap.values().next();
   const anyCell = calendarCellMap.values().next().value;
-  calendarHourHeight = anyCell ? anyCell.getBoundingClientRect().height : 48;
+  if (!sampleLayerEntry.done) {
+    const layerHeight = sampleLayerEntry.value.getBoundingClientRect().height;
+    if (layerHeight > 0) {
+      calendarHourHeight = layerHeight / 24;
+    } else if (anyCell) {
+      calendarHourHeight = anyCell.getBoundingClientRect().height;
+    } else {
+      calendarHourHeight = 48;
+    }
+  } else if (anyCell) {
+    calendarHourHeight = anyCell.getBoundingClientRect().height;
+  } else {
+    calendarHourHeight = 48;
+  }
 
   const weekEvents = appData.calendar.events
     .flatMap((event) => getOccurrencesForWeek(event))
