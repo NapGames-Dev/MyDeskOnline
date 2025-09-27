@@ -186,7 +186,6 @@ main {
   position: relative;
   pointer-events: none;
   z-index: 1;
-  height: 100%;
 }
 
 .calendar-grid .day-event-layer .event {
