@@ -182,6 +182,17 @@ main {
   background: #fff;
 }
 
+.calendar-grid .day-event-layer {
+  position: relative;
+  pointer-events: none;
+  z-index: 1;
+  height: 100%;
+}
+
+.calendar-grid .day-event-layer .event {
+  pointer-events: auto;
+}
+
 .calendar-grid .time-slot {
   border-bottom: 1px solid var(--border);
   padding: 0.4rem;
@@ -232,6 +243,7 @@ main {
   gap: 0.35rem;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
   transition: box-shadow 0.2s ease;
+  z-index: 2;
 }
 
 .calendar-grid .event:hover {
@@ -282,6 +294,10 @@ main {
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.6);
   cursor: ns-resize;
+}
+
+.calendar-grid .event .resize-handle.top {
+  top: 4px;
 }
 
 .calendar-grid .event .resize-handle.bottom {
