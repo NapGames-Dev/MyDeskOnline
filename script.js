@@ -23,7 +23,6 @@ const EVENT_DURATION_STEP = 15;
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
 let calendarCellMap = new Map();
-let calendarDayColumnMap = new Map();
 let selectedNodeId = null;
 let linkMode = false;
 let linkSourceId = null;
@@ -489,7 +488,6 @@ function renderCalendar() {
   const grid = document.getElementById('calendar-grid');
   if (!grid) return;
   calendarCellMap = new Map();
-  calendarDayColumnMap = new Map();
   grid.innerHTML = '';
 
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -545,18 +543,6 @@ function renderCalendar() {
       grid.appendChild(cell);
     });
   }
-
-  days.forEach((day, index) => {
-    const layer = document.createElement('div');
-    layer.className = 'day-event-layer';
-    const dayStart = new Date(day);
-    dayStart.setHours(0, 0, 0, 0);
-    layer.dataset.date = dayStart.toISOString();
-    layer.style.gridColumn = `${index + 2}`;
-    layer.style.gridRow = '2 / span 24';
-    grid.appendChild(layer);
-    calendarDayColumnMap.set(layer.dataset.date, layer);
-  });
 
   updateWeekLabel();
   renderCalendarEvents();
@@ -800,26 +786,12 @@ function daysInMonth(year, month) {
 }
 
 function renderCalendarEvents() {
-  calendarDayColumnMap.forEach((layer) => {
-    layer.querySelectorAll('.event').forEach((node) => node.remove());
+  calendarCellMap.forEach((cell) => {
+    cell.querySelectorAll('.event').forEach((node) => node.remove());
   });
 
-  const sampleLayerEntry = calendarDayColumnMap.values().next();
   const anyCell = calendarCellMap.values().next().value;
-  if (!sampleLayerEntry.done) {
-    const layerHeight = sampleLayerEntry.value.getBoundingClientRect().height;
-    if (layerHeight > 0) {
-      calendarHourHeight = layerHeight / 24;
-    } else if (anyCell) {
-      calendarHourHeight = anyCell.getBoundingClientRect().height;
-    } else {
-      calendarHourHeight = 48;
-    }
-  } else if (anyCell) {
-    calendarHourHeight = anyCell.getBoundingClientRect().height;
-  } else {
-    calendarHourHeight = 48;
-  }
+  calendarHourHeight = anyCell ? anyCell.getBoundingClientRect().height : 48;
 
   const weekEvents = appData.calendar.events
     .flatMap((event) => getOccurrencesForWeek(event))
@@ -829,8 +801,10 @@ function renderCalendarEvents() {
     const startDate = new Date(occ.start);
     const dayStart = new Date(startDate);
     dayStart.setHours(0, 0, 0, 0);
-    const layer = calendarDayColumnMap.get(dayStart.toISOString());
-    if (!layer) return;
+    const hour = startDate.getHours();
+    const key = `${dayStart.toISOString()}-${hour}`;
+    const cell = calendarCellMap.get(key);
+    if (!cell) return;
 
     const eventEl = document.createElement('div');
     eventEl.className = 'event';
@@ -862,8 +836,7 @@ function renderCalendarEvents() {
     eventEl.appendChild(header);
     eventEl.appendChild(timeRange);
 
-    const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
-    eventEl.style.top = `${(startMinutes / 60) * calendarHourHeight}px`;
+    eventEl.style.top = `${(startDate.getMinutes() / 60) * calendarHourHeight}px`;
     eventEl.style.height = `${(occ.duration / 60) * calendarHourHeight}px`;
 
     eventEl.addEventListener('dblclick', (event) => {
@@ -871,132 +844,82 @@ function renderCalendarEvents() {
       openEventModal({ event: occ.sourceEvent, occurrenceStart: startDate });
     });
 
-    const topHandle = document.createElement('div');
-    topHandle.className = 'resize-handle top';
-    topHandle.addEventListener('pointerdown', (event) => {
-      startResize(event, occ, eventEl, topHandle, 'start');
+    const resizeHandle = document.createElement('div');
+    resizeHandle.className = 'resize-handle bottom';
+    resizeHandle.addEventListener('pointerdown', (event) => {
+      startDurationResize(event, occ, eventEl, resizeHandle);
     });
-    eventEl.appendChild(topHandle);
+    eventEl.appendChild(resizeHandle);
 
-    const bottomHandle = document.createElement('div');
-    bottomHandle.className = 'resize-handle bottom';
-    bottomHandle.addEventListener('pointerdown', (event) => {
-      startResize(event, occ, eventEl, bottomHandle, 'end');
-    });
-    eventEl.appendChild(bottomHandle);
-
-    layer.appendChild(eventEl);
+    cell.appendChild(eventEl);
   });
 }
 
-function startResize(pointerEvent, occurrence, eventEl, handle, mode) {
+function startDurationResize(pointerEvent, occurrence, eventEl, handle) {
   pointerEvent.preventDefault();
   pointerEvent.stopPropagation();
   const sourceEvent = occurrence.sourceEvent;
   const originalDuration = Number(sourceEvent.duration) || MIN_EVENT_DURATION;
-  const occurrenceStart = new Date(occurrence.start);
-  const startMinutes = occurrenceStart.getHours() * 60 + occurrenceStart.getMinutes();
   resizeState = {
     pointerId: pointerEvent.pointerId,
     handle,
     eventEl,
     sourceEvent,
-    occurrenceStart,
+    occurrenceStart: new Date(occurrence.start),
     originalDuration,
     previewDuration: originalDuration,
-    previewStartShift: 0,
-    mode,
-    startMinutes,
     startY: pointerEvent.clientY
   };
   handle.setPointerCapture(pointerEvent.pointerId);
-  handle.addEventListener('pointermove', handleResize);
-  handle.addEventListener('pointerup', finishResize);
-  handle.addEventListener('pointercancel', finishResize);
+  handle.addEventListener('pointermove', handleDurationResize);
+  handle.addEventListener('pointerup', finishDurationResize);
+  handle.addEventListener('pointercancel', finishDurationResize);
 }
 
-function handleResize(event) {
+function handleDurationResize(event) {
   if (!resizeState) return;
   const deltaPixels = event.clientY - resizeState.startY;
   const minutesPerPixel = 60 / calendarHourHeight;
   const rawMinutes = deltaPixels * minutesPerPixel;
   const steppedMinutes = Math.round(rawMinutes / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
-  if (resizeState.mode === 'end') {
-    const startMinutes = resizeState.startMinutes;
-    const available = (24 * 60) - startMinutes;
-    let newDuration = resizeState.originalDuration + steppedMinutes;
-    if (available <= 0) {
-      newDuration = resizeState.originalDuration;
-    } else {
-      const minDuration = Math.min(MIN_EVENT_DURATION, available);
-      if (newDuration < minDuration) {
-        newDuration = minDuration;
-      }
-      if (newDuration > available) {
-        newDuration = available;
-      }
-      const stepMinimum = Math.min(EVENT_DURATION_STEP, available);
-      if (newDuration < stepMinimum) {
-        newDuration = stepMinimum;
-      }
-    }
-    resizeState.previewDuration = newDuration;
-    const height = (newDuration / 60) * calendarHourHeight;
-    resizeState.eventEl.style.height = `${height}px`;
-    const timeRange = resizeState.eventEl.querySelector('.time-range');
-    if (timeRange) {
-      const endDate = new Date(resizeState.occurrenceStart.getTime() + newDuration * 60000);
-      timeRange.textContent = `${formatTime(resizeState.occurrenceStart)} – ${formatTime(endDate)}`;
-    }
+  const startMinutes = resizeState.occurrenceStart.getHours() * 60 + resizeState.occurrenceStart.getMinutes();
+  const available = (24 * 60) - startMinutes;
+  let newDuration = resizeState.originalDuration + steppedMinutes;
+  if (available <= 0) {
+    newDuration = resizeState.originalDuration;
   } else {
-    const startMinutes = resizeState.startMinutes;
-    let newShift = steppedMinutes;
-    if (newShift < -startMinutes) {
-      newShift = -startMinutes;
+    const minDuration = Math.min(MIN_EVENT_DURATION, available);
+    if (newDuration < minDuration) {
+      newDuration = minDuration;
     }
-    const minDuration = Math.min(MIN_EVENT_DURATION, resizeState.originalDuration);
-    const maxForwardShift = resizeState.originalDuration - minDuration;
-    if (newShift > maxForwardShift) {
-      newShift = maxForwardShift;
+    if (newDuration > available) {
+      newDuration = available;
     }
-    const newDuration = resizeState.originalDuration - newShift;
-    resizeState.previewDuration = newDuration;
-    resizeState.previewStartShift = newShift;
-    const newStartMinutes = startMinutes + newShift;
-    const height = (newDuration / 60) * calendarHourHeight;
-    resizeState.eventEl.style.height = `${height}px`;
-    resizeState.eventEl.style.top = `${(newStartMinutes / 60) * calendarHourHeight}px`;
-    const timeRange = resizeState.eventEl.querySelector('.time-range');
-    if (timeRange) {
-      const newStart = new Date(resizeState.occurrenceStart.getTime() + newShift * 60000);
-      const endDate = new Date(newStart.getTime() + newDuration * 60000);
-      timeRange.textContent = `${formatTime(newStart)} – ${formatTime(endDate)}`;
+    const stepMinimum = Math.min(EVENT_DURATION_STEP, available);
+    if (newDuration < stepMinimum) {
+      newDuration = stepMinimum;
     }
+  }
+  resizeState.previewDuration = newDuration;
+  const height = (newDuration / 60) * calendarHourHeight;
+  resizeState.eventEl.style.height = `${height}px`;
+  const timeRange = resizeState.eventEl.querySelector('.time-range');
+  if (timeRange) {
+    const endDate = new Date(resizeState.occurrenceStart.getTime() + newDuration * 60000);
+    timeRange.textContent = `${formatTime(resizeState.occurrenceStart)} – ${formatTime(endDate)}`;
   }
 }
 
-function finishResize(event) {
+function finishDurationResize(event) {
   if (!resizeState) return;
   resizeState.handle.releasePointerCapture(resizeState.pointerId);
-  resizeState.handle.removeEventListener('pointermove', handleResize);
-  resizeState.handle.removeEventListener('pointerup', finishResize);
-  resizeState.handle.removeEventListener('pointercancel', finishResize);
-  if (resizeState.mode === 'end') {
-    const finalDuration = resizeState.previewDuration;
-    if (finalDuration !== resizeState.originalDuration) {
-      resizeState.sourceEvent.duration = finalDuration;
-      saveData();
-    }
-  } else {
-    const finalDuration = resizeState.previewDuration;
-    const finalShift = resizeState.previewStartShift;
-    if (finalDuration !== resizeState.originalDuration || finalShift !== 0) {
-      const baseStart = new Date(resizeState.sourceEvent.start);
-      baseStart.setMinutes(baseStart.getMinutes() + finalShift);
-      resizeState.sourceEvent.start = baseStart.toISOString();
-      resizeState.sourceEvent.duration = finalDuration;
-      saveData();
-    }
+  resizeState.handle.removeEventListener('pointermove', handleDurationResize);
+  resizeState.handle.removeEventListener('pointerup', finishDurationResize);
+  resizeState.handle.removeEventListener('pointercancel', finishDurationResize);
+  const finalDuration = resizeState.previewDuration;
+  if (finalDuration !== resizeState.originalDuration) {
+    resizeState.sourceEvent.duration = finalDuration;
+    saveData();
   }
   resizeState = null;
   renderCalendar();
@@ -1363,25 +1286,6 @@ function renderMindmap() {
   linksLayer.setAttribute('width', canvas.clientWidth);
   linksLayer.setAttribute('height', canvas.clientHeight);
 
-  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
-  marker.setAttribute('id', 'mindmap-arrow');
-  marker.setAttribute('viewBox', '0 0 12 12');
-  marker.setAttribute('refX', '11');
-  marker.setAttribute('refY', '6');
-  marker.setAttribute('markerWidth', '12');
-  marker.setAttribute('markerHeight', '12');
-  marker.setAttribute('markerUnits', 'strokeWidth');
-  marker.setAttribute('orient', 'auto');
-  const markerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  markerPath.setAttribute('d', 'M2 2 L10 6 L2 10 Z');
-  markerPath.setAttribute('fill', '#4f46e5');
-  markerPath.setAttribute('stroke', '#4f46e5');
-  markerPath.setAttribute('stroke-width', '1');
-  marker.appendChild(markerPath);
-  defs.appendChild(marker);
-  linksLayer.appendChild(defs);
-
   map.nodes.forEach((node) => {
     const nodeEl = document.createElement('div');
     nodeEl.className = 'mindmap-node';
@@ -1420,13 +1324,11 @@ function renderMindmap() {
   });
 
   const linesFragment = document.createDocumentFragment();
-  map.links.forEach((link) => {
+  map.links.forEach(() => {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.dataset.linkId = link.id;
-    line.setAttribute('stroke', '#4f46e5');
+    line.setAttribute('stroke', 'rgba(79, 70, 229, 0.45)');
     line.setAttribute('stroke-width', '3');
     line.setAttribute('stroke-linecap', 'round');
-    line.setAttribute('marker-end', 'url(#mindmap-arrow)');
     linesFragment.appendChild(line);
   });
   linksLayer.appendChild(linesFragment);
@@ -1538,16 +1440,12 @@ function updateLinkPositions() {
   const canvas = document.getElementById('mindmap-canvas');
   const linksLayer = document.getElementById('mindmap-links');
   if (!linksLayer || !canvas) return;
-  const lines = Array.from(linksLayer.querySelectorAll('line[data-link-id]'));
+  const lines = Array.from(linksLayer.querySelectorAll('line'));
   const canvasRect = canvas.getBoundingClientRect();
   const map = getActiveMindmap();
-  const linkMap = new Map(map.links.map((link) => [link.id, link]));
-  lines.forEach((line) => {
-    const link = linkMap.get(line.dataset.linkId);
-    if (!link) {
-      line.remove();
-      return;
-    }
+  lines.forEach((line, index) => {
+    const link = map.links[index];
+    if (!link) return;
     const fromEl = canvas.querySelector(`.mindmap-node[data-id="${link.from}"]`);
     const toEl = canvas.querySelector(`.mindmap-node[data-id="${link.to}"]`);
     if (!fromEl || !toEl) return;
