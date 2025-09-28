@@ -35,7 +35,6 @@ let handleDBPromise = null;
 let saveTimer = null;
 let calendarHourHeight = 48;
 let resizeState = null;
-let currentTimeTimer = null;
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(defaultData));
@@ -390,19 +389,14 @@ function initTabs() {
       requestAnimationFrame(() => {
         renderCalendar();
         renderEventTypes();
-        const panel = document.getElementById('calendar');
-        if (panel && panel.classList.contains('active')) {
-          startCurrentTimeTicker();
-        }
       });
-    } else {
-      stopCurrentTimeTicker();
     }
   };
   links.forEach((link) => {
-      document.getElementById(link.dataset.target).classList.add('active');
+    link.addEventListener('click', () => {
       activateTab(link);
     });
+  });
 
   const initiallyActive = links.find((link) => link.classList.contains('active'));
   if (initiallyActive) {
@@ -810,88 +804,6 @@ function daysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
-function updateCurrentTimeIndicator() {
-  const grid = document.getElementById('calendar-grid');
-  const calendarPanel = document.getElementById('calendar');
-  const existingLine = document.getElementById('current-time-line');
-
-  if (!grid || !calendarPanel) {
-    if (existingLine) {
-      existingLine.style.display = 'none';
-    }
-    return;
-  }
-
-  if (!calendarPanel.classList.contains('active')) {
-    if (existingLine) {
-      existingLine.style.display = 'none';
-    }
-    return;
-  }
-
-  let line = existingLine;
-  if (!line) {
-    line = document.createElement('div');
-    line.id = 'current-time-line';
-    line.className = 'current-time-line';
-    grid.appendChild(line);
-  }
-
-  const now = new Date();
-  const weekStart = new Date(currentWeekStart);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekEnd.getDate() + 7);
-
-  if (now < weekStart || now >= weekEnd) {
-    line.style.display = 'none';
-    return;
-  }
-
-  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
-  const startMinutes = CALENDAR_START_HOUR * 60;
-  if (minutesSinceMidnight < startMinutes || minutesSinceMidnight > CALENDAR_END_MINUTE) {
-    line.style.display = 'none';
-    return;
-  }
-
-  const timeSlot = grid.querySelector('.time-slot');
-  const header = grid.querySelector('.day-header');
-  const headerHeight = header ? header.getBoundingClientRect().height : 0;
-  const timeColumnWidth = timeSlot ? timeSlot.getBoundingClientRect().width : 0;
-
-  const cellIterator = calendarCellMap.values().next();
-  if (!cellIterator.done) {
-    calendarHourHeight = cellIterator.value.getBoundingClientRect().height;
-  }
-
-  const offsetMinutes = minutesSinceMidnight - startMinutes;
-  const top = headerHeight + (offsetMinutes / 60) * calendarHourHeight;
-
-  line.style.display = 'block';
-  line.style.left = `${timeColumnWidth}px`;
-  line.style.right = '0';
-  line.style.top = `${top}px`;
-}
-
-function startCurrentTimeTicker() {
-  updateCurrentTimeIndicator();
-  if (currentTimeTimer) return;
-  currentTimeTimer = setInterval(() => {
-    updateCurrentTimeIndicator();
-  }, 60000);
-}
-
-function stopCurrentTimeTicker() {
-  if (currentTimeTimer) {
-    clearInterval(currentTimeTimer);
-    currentTimeTimer = null;
-  }
-  const line = document.getElementById('current-time-line');
-  if (line) {
-    line.style.display = 'none';
-  }
-}
-
 function renderCalendarEvents() {
   calendarCellMap.forEach((cell) => {
     cell.querySelectorAll('.event').forEach((node) => node.remove());
@@ -968,8 +880,6 @@ function renderCalendarEvents() {
 
     cell.appendChild(eventEl);
   });
-
-  updateCurrentTimeIndicator();
 }
 
 function startDurationResize(pointerEvent, occurrence, eventEl, handle) {
@@ -1322,8 +1232,6 @@ function initCalendar() {
       renderCalendar();
     }
   });
-
-  window.addEventListener('resize', updateCurrentTimeIndicator);
 }
 
 function getActiveMindmap() {
