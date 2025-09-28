@@ -19,6 +19,9 @@ const defaultData = {
 const DEFAULT_EVENT_COLOR = '#10b981';
 const MIN_EVENT_DURATION = 15;
 const EVENT_DURATION_STEP = 15;
+const CALENDAR_START_HOUR = 7;
+const CALENDAR_END_HOUR = 22;
+const CALENDAR_END_MINUTE = (CALENDAR_END_HOUR + 1) * 60;
 
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
@@ -517,7 +520,7 @@ function renderCalendar() {
     grid.appendChild(header);
   });
 
-  for (let hour = 0; hour < 24; hour += 1) {
+  for (let hour = CALENDAR_START_HOUR; hour <= CALENDAR_END_HOUR; hour += 1) {
     const timeCell = document.createElement('div');
     timeCell.className = 'time-slot';
     timeCell.textContent = `${hour.toString().padStart(2, '0')}h`;
@@ -805,9 +808,14 @@ function renderCalendarEvents() {
     const startDate = new Date(occ.start);
 
     // Trouver la cellule (jour minuit + heure de départ)
+    const startHour = startDate.getHours();
+    if (startHour < CALENDAR_START_HOUR || startHour > CALENDAR_END_HOUR) {
+      return;
+    }
+
     const dayStart = new Date(startDate);
     dayStart.setHours(0, 0, 0, 0);
-    const key = `${dayStart.toISOString()}-${startDate.getHours()}`;
+    const key = `${dayStart.toISOString()}-${startHour}`;
     const cell = calendarCellMap.get(key);
     if (!cell) return;
 
@@ -829,9 +837,15 @@ function renderCalendarEvents() {
     `;
 
     // Position verticale dans la cellule + hauteur (le débordement est permis)
-    const topPx = (startDate.getMinutes() / 60) * calendarHourHeight;
+    const startMinutes = startDate.getMinutes();
+    const topPx = (startMinutes / 60) * calendarHourHeight;
+    const absoluteStartMinutes = startHour * 60 + startMinutes;
+    const visibleDuration = Math.min(
+      occ.duration,
+      Math.max(0, CALENDAR_END_MINUTE - absoluteStartMinutes)
+    );
     eventEl.style.top = `${topPx}px`;
-    eventEl.style.height = `${(occ.duration / 60) * calendarHourHeight}px`;
+    eventEl.style.height = `${(visibleDuration / 60) * calendarHourHeight}px`;
 
     // Actions
     eventEl.querySelector('.delete-event').addEventListener('click', (e) => {
@@ -881,7 +895,7 @@ function handleDurationResize(event) {
   const rawMinutes = deltaPixels * minutesPerPixel;
   const steppedMinutes = Math.round(rawMinutes / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
   const startMinutes = resizeState.occurrenceStart.getHours() * 60 + resizeState.occurrenceStart.getMinutes();
-  const available = (24 * 60) - startMinutes;
+  const available = Math.max(0, CALENDAR_END_MINUTE - startMinutes);
   let newDuration = resizeState.originalDuration + steppedMinutes;
   if (available <= 0) {
     newDuration = resizeState.originalDuration;
@@ -963,7 +977,7 @@ function handleStartResize(event) {
 
   // bornes : pas avant 00:00 du jour, pas après (fin - durée minimale)
   const dayStart = new Date(resizeState.originalStart);
-  dayStart.setHours(0, 0, 0, 0);
+  dayStart.setHours(CALENDAR_START_HOUR, 0, 0, 0);
   const minGap = Math.max(MIN_EVENT_DURATION, EVENT_DURATION_STEP);
   const maxStart = new Date(resizeState.fixedEnd.getTime() - minGap * 60000);
 
@@ -1104,7 +1118,7 @@ function openEventModal({ start, event: existingEvent = null, occurrenceStart = 
       duration = EVENT_DURATION_STEP;
     }
     const startMinutes = startDate.getHours() * 60 + startDate.getMinutes();
-    const available = (24 * 60) - startMinutes;
+    const available = Math.max(0, CALENDAR_END_MINUTE - startMinutes);
     if (available > 0) {
       const minDuration = Math.min(MIN_EVENT_DURATION, available);
       if (duration < minDuration) {
