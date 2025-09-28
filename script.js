@@ -379,14 +379,29 @@ async function initData() {
 
 function initTabs() {
   const links = Array.from(document.querySelectorAll('.tab-link'));
+  const activateTab = (link) => {
+    links.forEach((l) => l.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById(link.dataset.target).classList.add('active');
+
+    if (link.dataset.target === 'calendar') {
+      requestAnimationFrame(() => {
+        renderCalendar();
+        renderEventTypes();
+      });
+    }
+  };
   links.forEach((link) => {
     link.addEventListener('click', () => {
-      links.forEach((l) => l.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
-      link.classList.add('active');
-      document.getElementById(link.dataset.target).classList.add('active');
+      activateTab(link);
     });
   });
+
+  const initiallyActive = links.find((link) => link.classList.contains('active'));
+  if (initiallyActive) {
+    activateTab(initiallyActive);
+  }
 }
 
 function initStorageControls() {
