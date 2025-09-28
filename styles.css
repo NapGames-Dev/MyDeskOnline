@@ -175,7 +175,7 @@ main {
   flex: 1;
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  grid-template-rows: 48px repeat(24, minmax(48px, 1fr));
+  grid-template-rows: 48px repeat(24, 48px);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
@@ -212,6 +212,19 @@ main {
   border-bottom: 1px solid rgba(209, 213, 219, 0.6);
   position: relative;
   background: #fff;
+  overflow: visible; /* ⬅️ permet à l'event de déborder sur les heures suivantes */
+}
+
+.day-overlay {
+  grid-row: 2 / span 24;   /* couvre les 24 lignes d'heures (la 1 = en-tête) */
+  position: relative;      /* pour positionner les .event en absolu dedans */
+  pointer-events: none;    /* laisse passer le clic droit sur les cellules */
+  z-index: 1;              /* au-dessus des cells, sans masquer les bordures */
+}
+
+/* Les évènements restent interactifs */
+.day-overlay .event {
+  pointer-events: auto;
 }
 
 .calendar-grid .hour-cell.today {
@@ -232,6 +245,7 @@ main {
   gap: 0.35rem;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25);
   transition: box-shadow 0.2s ease;
+  z-index: 2; /* passe au-dessus des cellules suivantes */
 }
 
 .calendar-grid .event:hover {
@@ -286,6 +300,10 @@ main {
 
 .calendar-grid .event .resize-handle.bottom {
   bottom: 4px;
+}
+
+.calendar-grid .event .resize-handle.top {
+  top: 4px;
 }
 
 .event-types-panel {
