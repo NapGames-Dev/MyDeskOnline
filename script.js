@@ -400,10 +400,9 @@ function initTabs() {
     }
   };
   links.forEach((link) => {
-    link.addEventListener('click', () => {
+      document.getElementById(link.dataset.target).classList.add('active');
       activateTab(link);
     });
-  });
 
   const initiallyActive = links.find((link) => link.classList.contains('active'));
   if (initiallyActive) {
