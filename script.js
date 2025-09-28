@@ -23,6 +23,7 @@ const EVENT_DURATION_STEP = 15;
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
 let calendarCellMap = new Map();
+let dayOverlayMap = new Map();
 let selectedNodeId = null;
 let linkMode = false;
 let linkSourceId = null;
@@ -790,66 +791,63 @@ function renderCalendarEvents() {
     cell.querySelectorAll('.event').forEach((node) => node.remove());
   });
 
+  // 2) Mesurer la hauteur d’une heure pour le positionnement
   const anyCell = calendarCellMap.values().next().value;
   calendarHourHeight = anyCell ? anyCell.getBoundingClientRect().height : 48;
 
+  // 3) Calculer les occurrences de la semaine
   const weekEvents = appData.calendar.events
     .flatMap((event) => getOccurrencesForWeek(event))
     .sort((a, b) => a.start - b.start);
 
+  // 4) Dessiner chaque occurrence dans la cellule de départ
   weekEvents.forEach((occ) => {
     const startDate = new Date(occ.start);
+
+    // Trouver la cellule (jour minuit + heure de départ)
     const dayStart = new Date(startDate);
     dayStart.setHours(0, 0, 0, 0);
-    const hour = startDate.getHours();
-    const key = `${dayStart.toISOString()}-${hour}`;
+    const key = `${dayStart.toISOString()}-${startDate.getHours()}`;
     const cell = calendarCellMap.get(key);
     if (!cell) return;
 
+    // Créer l'élément event
     const eventEl = document.createElement('div');
     eventEl.className = 'event';
-    eventEl.dataset.eventId = occ.sourceEvent.id;
     eventEl.style.setProperty('--event-color', getEventColor(occ.sourceEvent));
 
-    const header = document.createElement('div');
-    header.className = 'event-header';
-    const titleEl = document.createElement('div');
-    titleEl.className = 'title';
-    titleEl.textContent = occ.sourceEvent.title || 'Nouvel évènement';
-    const deleteBtn = document.createElement('button');
-    deleteBtn.type = 'button';
-    deleteBtn.className = 'delete-event';
-    deleteBtn.textContent = '✕';
-    deleteBtn.addEventListener('click', (event) => {
-      event.stopPropagation();
-      if (!confirm('Supprimer cet évènement et ses répétitions ?')) return;
-      deleteEvent(occ.sourceEvent.id);
-    });
-    header.appendChild(titleEl);
-    header.appendChild(deleteBtn);
+    // Contenu (titre + horaire)
+    const endDate = new Date(startDate.getTime() + occ.duration * 60000);
+    eventEl.innerHTML = `
+      <div class="resize-handle top"></div>
+      <div class="event-header">
+        <div class="title">${occ.sourceEvent.title || 'Évènement'}</div>
+        <button class="delete-event" title="Supprimer">✕</button>
+      </div>
+      <div class="time-range">${formatTime(startDate)} – ${formatTime(endDate)}</div>
+      <div class="resize-handle bottom"></div>
+    `;
 
-    const timeRange = document.createElement('div');
-    timeRange.className = 'time-range';
-    const endTime = new Date(startDate.getTime() + occ.duration * 60000);
-    timeRange.textContent = `${formatTime(startDate)} – ${formatTime(endTime)}`;
-
-    eventEl.appendChild(header);
-    eventEl.appendChild(timeRange);
-
-    eventEl.style.top = `${(startDate.getMinutes() / 60) * calendarHourHeight}px`;
+    // Position verticale dans la cellule + hauteur (le débordement est permis)
+    const topPx = (startDate.getMinutes() / 60) * calendarHourHeight;
+    eventEl.style.top = `${topPx}px`;
     eventEl.style.height = `${(occ.duration / 60) * calendarHourHeight}px`;
 
-    eventEl.addEventListener('dblclick', (event) => {
-      event.stopPropagation();
-      openEventModal({ event: occ.sourceEvent, occurrenceStart: startDate });
+    // Actions
+    eventEl.querySelector('.delete-event').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteEvent(occ.sourceEvent.id);
     });
+    const handle = eventEl.querySelector('.resize-handle.bottom');
+    handle.addEventListener('pointerdown', (e) => startDurationResize(e, occ, eventEl, handle));
 
-    const resizeHandle = document.createElement('div');
-    resizeHandle.className = 'resize-handle bottom';
-    resizeHandle.addEventListener('pointerdown', (event) => {
-      startDurationResize(event, occ, eventEl, resizeHandle);
+    const topHandle = eventEl.querySelector('.resize-handle.top');
+    topHandle.addEventListener('pointerdown', (e) => startStartResize(e, occ, eventEl, topHandle));
+
+    eventEl.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      openEventModal({ event: occ.sourceEvent, occurrenceStart: occ.start });
     });
-    eventEl.appendChild(resizeHandle);
 
     cell.appendChild(eventEl);
   });
@@ -921,6 +919,104 @@ function finishDurationResize(event) {
     resizeState.sourceEvent.duration = finalDuration;
     saveData();
   }
+  resizeState = null;
+  renderCalendar();
+}
+
+function startStartResize(pointerEvent, occurrence, eventEl, handle) {
+  pointerEvent.preventDefault();
+  pointerEvent.stopPropagation();
+  const sourceEvent = occurrence.sourceEvent;
+  const originalStart = new Date(occurrence.start);
+  const originalDuration = Number(sourceEvent.duration) || MIN_EVENT_DURATION;
+  const fixedEnd = new Date(originalStart.getTime() + originalDuration * 60000); // fin fixe
+
+  resizeState = {
+    pointerId: pointerEvent.pointerId,
+    handle,
+    eventEl,
+    sourceEvent,
+    originalStart,
+    originalDuration,
+    fixedEnd,
+    previewStart: new Date(originalStart),
+    previewDuration: originalDuration,
+    startY: pointerEvent.clientY
+  };
+
+  handle.setPointerCapture(pointerEvent.pointerId);
+  handle.addEventListener('pointermove', handleStartResize);
+  handle.addEventListener('pointerup', finishStartResize);
+  handle.addEventListener('pointercancel', finishStartResize);
+}
+
+function handleStartResize(event) {
+  if (!resizeState) return;
+
+  const minutesPerPixel = 60 / calendarHourHeight;
+  const deltaPixels = event.clientY - resizeState.startY;      // vers le bas = +, vers le haut = -
+  const rawMinutes = deltaPixels * minutesPerPixel;
+  const steppedMinutes = Math.round(rawMinutes / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
+
+  // nouveau début (provisoire) = ancien début + delta
+  let newStart = new Date(resizeState.originalStart.getTime() + steppedMinutes * 60000);
+
+  // bornes : pas avant 00:00 du jour, pas après (fin - durée minimale)
+  const dayStart = new Date(resizeState.originalStart);
+  dayStart.setHours(0, 0, 0, 0);
+  const minGap = Math.max(MIN_EVENT_DURATION, EVENT_DURATION_STEP);
+  const maxStart = new Date(resizeState.fixedEnd.getTime() - minGap * 60000);
+
+  if (newStart < dayStart) newStart = dayStart;
+  if (newStart > maxStart) newStart = maxStart;
+
+  // durée = (fin fixe - début nouveau), arrondie au pas
+  let newDuration = Math.round(((resizeState.fixedEnd - newStart) / 60000) / EVENT_DURATION_STEP) * EVENT_DURATION_STEP;
+  if (newDuration < MIN_EVENT_DURATION) newDuration = MIN_EVENT_DURATION;
+
+  // réajuster le début pour coller au pas exact
+  newStart = new Date(resizeState.fixedEnd.getTime() - newDuration * 60000);
+
+  // mémoriser l’aperçu
+  resizeState.previewStart = newStart;
+  resizeState.previewDuration = newDuration;
+
+  // mise à jour visuelle (top relatif à la cellule d’origine) + hauteur
+  const offsetMinutes =
+    (newStart.getHours() - resizeState.originalStart.getHours()) * 60 +
+    (newStart.getMinutes() - resizeState.originalStart.getMinutes());
+  const topPx = (offsetMinutes / 60) * calendarHourHeight;
+
+  resizeState.eventEl.style.top = `${topPx}px`;
+  resizeState.eventEl.style.height = `${(newDuration / 60) * calendarHourHeight}px`;
+
+  const timeRange = resizeState.eventEl.querySelector('.time-range');
+  if (timeRange) {
+    // formatte l'heure locale (tu as déjà formatTime)
+    timeRange.textContent = `${formatTime(newStart)} – ${formatTime(resizeState.fixedEnd)}`;
+  }
+}
+
+function finishStartResize() {
+  if (!resizeState) return;
+
+  resizeState.handle.releasePointerCapture(resizeState.pointerId);
+  resizeState.handle.removeEventListener('pointermove', handleStartResize);
+  resizeState.handle.removeEventListener('pointerup', finishStartResize);
+  resizeState.handle.removeEventListener('pointercancel', finishStartResize);
+
+  const finalStart = resizeState.previewStart || resizeState.originalStart;
+  const finalDuration = resizeState.previewDuration || resizeState.originalDuration;
+
+  // convertir en valeur "datetime-local" (YYYY-MM-DDTHH:MM) comme le reste de l’app
+  const localInputValue = new Date(finalStart.getTime() - finalStart.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+
+  resizeState.sourceEvent.start = localInputValue;
+  resizeState.sourceEvent.duration = finalDuration;
+
+  saveData();
   resizeState = null;
   renderCalendar();
 }
