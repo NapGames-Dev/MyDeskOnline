@@ -175,7 +175,7 @@ main {
   flex: 1;
   display: grid;
   grid-template-columns: 80px repeat(7, 1fr);
-  grid-template-rows: 48px repeat(24, 48px);
+  grid-template-rows: 48px repeat(16, 48px);
   border: 1px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
@@ -216,7 +216,7 @@ main {
 }
 
 .day-overlay {
-  grid-row: 2 / span 24;   /* couvre les 24 lignes d'heures (la 1 = en-tête) */
+  grid-row: 2 / span 16;   /* couvre les lignes horaires visibles (la 1 = en-tête) */
   position: relative;      /* pour positionner les .event en absolu dedans */
   pointer-events: none;    /* laisse passer le clic droit sur les cellules */
   z-index: 1;              /* au-dessus des cells, sans masquer les bordures */
