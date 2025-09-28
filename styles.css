@@ -180,6 +180,7 @@ main {
   border-radius: 12px;
   overflow: hidden;
   background: #fff;
+  position: relative;
 }
 
 .calendar-grid .time-slot {
@@ -213,6 +214,14 @@ main {
   position: relative;
   background: #fff;
   overflow: visible; /* ⬅️ permet à l'event de déborder sur les heures suivantes */
+}
+
+.current-time-line {
+  position: absolute;
+  height: 2px;
+  background: #ef4444;
+  pointer-events: none;
+  z-index: 4;
 }
 
 .day-overlay {
