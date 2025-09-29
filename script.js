@@ -1554,6 +1554,10 @@ function enableDrag(element, node) {
   let offsetY = 0;
 
   element.addEventListener('pointerdown', (event) => {
+    const linkingToOtherNode = linkMode && linkSourceId && linkSourceId !== node.id;
+    if (linkingToOtherNode) {
+      return;
+    }
     event.preventDefault();
     selectNode(node.id);
     offsetX = event.clientX - node.x;
