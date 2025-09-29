@@ -1411,6 +1411,23 @@ function renderMindmap() {
   linksLayer.setAttribute('width', canvas.clientWidth);
   linksLayer.setAttribute('height', canvas.clientHeight);
 
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+  marker.setAttribute('id', 'mindmap-arrow');
+  marker.setAttribute('viewBox', '0 0 10 10');
+  marker.setAttribute('refX', '10');
+  marker.setAttribute('refY', '5');
+  marker.setAttribute('markerWidth', '6');
+  marker.setAttribute('markerHeight', '6');
+  marker.setAttribute('orient', 'auto');
+  const markerPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  const linkColor = 'rgba(79, 70, 229, 0.55)';
+  markerPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+  markerPath.setAttribute('fill', linkColor);
+  marker.appendChild(markerPath);
+  defs.appendChild(marker);
+  linksLayer.appendChild(defs);
+
   map.nodes.forEach((node) => {
     const nodeEl = document.createElement('div');
     nodeEl.className = 'mindmap-node';
@@ -1451,9 +1468,10 @@ function renderMindmap() {
   const linesFragment = document.createDocumentFragment();
   map.links.forEach(() => {
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('stroke', 'rgba(79, 70, 229, 0.45)');
+    line.setAttribute('stroke', linkColor);
     line.setAttribute('stroke-width', '3');
     line.setAttribute('stroke-linecap', 'round');
+    line.setAttribute('marker-end', 'url(#mindmap-arrow)');
     linesFragment.appendChild(line);
   });
   linksLayer.appendChild(linesFragment);
