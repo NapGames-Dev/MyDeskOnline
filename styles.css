@@ -50,9 +50,8 @@ button:active {
 
 main {
   flex: 1;
-  padding: 1.5rem;
-  max-width: 1200px;
-  width: 100%;
+  padding: 1.5rem 2rem;
+  width: min(100%, 1600px);
   margin: 0 auto;
 }
 
