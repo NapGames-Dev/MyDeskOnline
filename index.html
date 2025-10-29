@@ -14,6 +14,7 @@
       <button class="tab-link" data-target="calendar">Agenda</button>
       <button class="tab-link" data-target="mindmap">Cartes mentales</button>
       <button class="tab-link" data-target="todo">To Do List</button>
+      <button class="tab-link" data-target="gantt">GANTT</button>
     </nav>
   </header>
 
@@ -102,6 +103,45 @@
         <button id="add-block">Ajouter un bloc</button>
       </div>
       <div class="todo-blocks" id="todo-blocks"></div>
+    </section>
+
+    <section id="gantt" class="tab-panel">
+      <div class="gantt-layout">
+        <aside class="gantt-sidebar">
+          <h3>Schémas GANTT</h3>
+          <ul class="gantt-chart-list" id="gantt-chart-list"></ul>
+          <div class="gantt-actions">
+            <button id="gantt-add-chart">Nouveau schéma</button>
+            <button id="gantt-rename-chart">Renommer</button>
+            <button id="gantt-delete-chart">Supprimer</button>
+          </div>
+        </aside>
+        <div class="gantt-main">
+          <div class="gantt-header">
+            <div>
+              <h3 id="gantt-active-name">Créez un schéma GANTT pour commencer</h3>
+              <p class="hint">Ajoutez des tâches avec leurs dates de début et de fin pour visualiser votre planning.</p>
+            </div>
+            <button id="gantt-add-task" disabled>Ajouter une tâche</button>
+          </div>
+          <div class="gantt-content" id="gantt-content">
+            <div class="gantt-empty" id="gantt-empty">Aucun schéma sélectionné.</div>
+            <div class="gantt-board" id="gantt-board" hidden>
+              <div class="gantt-task-list">
+                <div class="gantt-task-row gantt-task-header">
+                  <span>Tâche</span>
+                  <span>Début</span>
+                  <span>Fin</span>
+                  <span>Progression</span>
+                  <span></span>
+                </div>
+                <div id="gantt-task-rows"></div>
+              </div>
+              <div class="gantt-timeline" id="gantt-timeline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
