@@ -13,6 +13,10 @@ const defaultData = {
   },
   todo: {
     blocks: []
+  },
+  gantt: {
+    charts: [],
+    activeChartId: null
   }
 };
 
@@ -22,6 +26,9 @@ const EVENT_DURATION_STEP = 15;
 const CALENDAR_START_HOUR = 7;
 const CALENDAR_END_HOUR = 22;
 const CALENDAR_END_MINUTE = (CALENDAR_END_HOUR + 1) * 60;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const GANTT_ROW_HEIGHT = 56;
+const GANTT_DAY_WIDTH = 64;
 
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
@@ -66,6 +73,31 @@ function formatTime(date) {
     hour: '2-digit',
     minute: '2-digit'
   });
+}
+
+function toISODateString(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return new Date().toISOString().split('T')[0];
+  }
+  const normalized = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return normalized.toISOString().split('T')[0];
+}
+
+function parseDateOnly(value) {
+  if (typeof value !== 'string') return null;
+  const parts = value.split('-');
+  if (parts.length !== 3) return null;
+  const [year, month, day] = parts.map((part) => Number(part));
+  if (!year || !month || !day) return null;
+  const date = new Date(year, month - 1, day);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function diffDays(start, end) {
+  if (!(start instanceof Date) || !(end instanceof Date)) return 0;
+  return Math.round((end.getTime() - start.getTime()) / DAY_IN_MS);
 }
 
 function uid() {
@@ -166,6 +198,10 @@ function loadFromLocalStorage() {
       todo: {
         ...cloneDefault().todo,
         ...(parsed.todo ? parsed.todo : {})
+      },
+      gantt: {
+        ...cloneDefault().gantt,
+        ...(parsed.gantt ? parsed.gantt : {})
       }
     };
   } catch (error) {
@@ -338,6 +374,92 @@ function migrateData() {
   if (!appData.mindmap.activeMapId || !appData.mindmap.maps.some((map) => map.id === appData.mindmap.activeMapId)) {
     appData.mindmap.activeMapId = appData.mindmap.maps[0].id;
   }
+
+  if (!appData.todo || typeof appData.todo !== 'object') {
+    appData.todo = cloneDefault().todo;
+  }
+
+  if (!Array.isArray(appData.todo.blocks)) {
+    appData.todo.blocks = [];
+  }
+
+  appData.todo.blocks = appData.todo.blocks.map((block, index) => {
+    const items = Array.isArray(block && block.items)
+      ? block.items.map((item, itemIndex) => ({
+          id: item && item.id ? item.id : uid(),
+          text: item && item.text ? item.text : `Tâche ${itemIndex + 1}`,
+          done: Boolean(item && item.done)
+        }))
+      : [];
+
+    return {
+      id: block && block.id ? block.id : uid(),
+      title: block && block.title ? block.title : `Bloc ${index + 1}`,
+      items
+    };
+  });
+
+  if (!appData.gantt || typeof appData.gantt !== 'object') {
+    appData.gantt = cloneDefault().gantt;
+  }
+
+  if (!Array.isArray(appData.gantt.charts)) {
+    appData.gantt.charts = [];
+  }
+
+  const todayISO = new Date().toISOString().split('T')[0];
+
+  appData.gantt.charts = appData.gantt.charts.map((chart, index) => {
+    const chartId = chart && chart.id ? chart.id : uid();
+    const tasks = Array.isArray(chart && chart.tasks)
+      ? chart.tasks.map((task, taskIndex) => {
+          const startValue = task && task.start ? task.start : todayISO;
+          const endValue = task && task.end ? task.end : startValue;
+
+          let startDate = parseDateOnly(typeof startValue === 'string' ? startValue : '');
+          if (!startDate && typeof startValue === 'string' && startValue.includes('T')) {
+            startDate = parseDateOnly(startValue.split('T')[0]);
+          }
+          if (!startDate) {
+            startDate = parseDateOnly(todayISO) || new Date();
+          }
+
+          let endDate = parseDateOnly(typeof endValue === 'string' ? endValue : '');
+          if (!endDate && typeof endValue === 'string' && endValue.includes('T')) {
+            endDate = parseDateOnly(endValue.split('T')[0]);
+          }
+          if (!endDate) {
+            endDate = new Date(startDate);
+          }
+          if (endDate < startDate) {
+            endDate = new Date(startDate);
+          }
+
+          const normalizedStart = toISODateString(startDate);
+          const normalizedEnd = toISODateString(endDate);
+          const rawProgress = Number(task && task.progress);
+          const clampedProgress = Number.isFinite(rawProgress) ? Math.min(100, Math.max(0, rawProgress)) : 0;
+          return {
+            id: task && task.id ? task.id : uid(),
+            name: task && task.name ? task.name : `Tâche ${taskIndex + 1}`,
+            start: normalizedStart,
+            end: normalizedEnd,
+            progress: clampedProgress
+          };
+        })
+      : [];
+    return {
+      id: chartId,
+      name: chart && chart.name ? chart.name : `Schéma ${index + 1}`,
+      tasks
+    };
+  });
+
+  if (appData.gantt.charts.length === 0) {
+    appData.gantt.activeChartId = null;
+  } else if (!appData.gantt.activeChartId || !appData.gantt.charts.some((chart) => chart.id === appData.gantt.activeChartId)) {
+    appData.gantt.activeChartId = appData.gantt.charts[0].id;
+  }
 }
 
 function updateStorageStatus(message, type = 'info') {
@@ -365,6 +487,10 @@ async function initData() {
       todo: {
         ...cloneDefault().todo,
         ...(fileData.todo ? fileData.todo : appData.todo)
+      },
+      gantt: {
+        ...cloneDefault().gantt,
+        ...(fileData.gantt ? fileData.gantt : appData.gantt)
       }
     };
     updateStorageStatus('Données chargées depuis le disque.', 'success');
@@ -389,6 +515,10 @@ function initTabs() {
       requestAnimationFrame(() => {
         renderCalendar();
         renderEventTypes();
+      });
+    } else if (link.dataset.target === 'gantt') {
+      requestAnimationFrame(() => {
+        renderGantt();
       });
     }
   };
@@ -479,6 +609,10 @@ function initStorageControls() {
         todo: {
           ...cloneDefault().todo,
           ...(imported.todo ? imported.todo : {})
+        },
+        gantt: {
+          ...cloneDefault().gantt,
+          ...(imported.gantt ? imported.gantt : {})
         }
       };
       migrateData();
@@ -1632,6 +1766,346 @@ function setLinkMode(active) {
   syncLinkButton();
 }
 
+
+function getActiveGanttChart() {
+  if (!appData.gantt || !Array.isArray(appData.gantt.charts) || appData.gantt.charts.length === 0) {
+    return null;
+  }
+  if (!appData.gantt.activeChartId || !appData.gantt.charts.some((chart) => chart.id === appData.gantt.activeChartId)) {
+    appData.gantt.activeChartId = appData.gantt.charts[0].id;
+  }
+  return appData.gantt.charts.find((chart) => chart.id === appData.gantt.activeChartId) || null;
+}
+
+function renderGanttList() {
+  const list = document.getElementById('gantt-chart-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (!appData.gantt || appData.gantt.charts.length === 0) {
+    const empty = document.createElement('li');
+    empty.className = 'empty-state';
+    empty.textContent = 'Créez un schéma GANTT pour commencer.';
+    list.appendChild(empty);
+    return;
+  }
+
+  appData.gantt.charts.forEach((chart) => {
+    const item = document.createElement('li');
+    item.className = 'gantt-chart-item';
+    if (chart.id === appData.gantt.activeChartId) {
+      item.classList.add('active');
+    }
+    item.textContent = chart.name || 'Schéma sans nom';
+    item.addEventListener('click', () => {
+      appData.gantt.activeChartId = chart.id;
+      saveData();
+      renderGantt();
+    });
+    list.appendChild(item);
+  });
+}
+
+function renderGanttBoard() {
+  const nameEl = document.getElementById('gantt-active-name');
+  const addTaskBtn = document.getElementById('gantt-add-task');
+  const emptyEl = document.getElementById('gantt-empty');
+  const boardEl = document.getElementById('gantt-board');
+  const rowsContainer = document.getElementById('gantt-task-rows');
+  if (!nameEl || !addTaskBtn || !emptyEl || !boardEl || !rowsContainer) return;
+
+  const chart = getActiveGanttChart();
+  if (!chart) {
+    nameEl.textContent = 'Créez un schéma GANTT pour commencer';
+    addTaskBtn.disabled = true;
+    emptyEl.hidden = false;
+    boardEl.hidden = true;
+    rowsContainer.innerHTML = '';
+    renderGanttTimeline(null);
+    return;
+  }
+
+  nameEl.textContent = chart.name || 'Schéma sans nom';
+  addTaskBtn.disabled = false;
+  emptyEl.hidden = true;
+  boardEl.hidden = false;
+  rowsContainer.innerHTML = '';
+
+  if (chart.tasks.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'Ajoutez une tâche pour construire votre planning.';
+    rowsContainer.appendChild(empty);
+  } else {
+    chart.tasks.forEach((task) => {
+      const row = document.createElement('div');
+      row.className = 'gantt-task-row';
+
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.value = task.name || '';
+      nameInput.addEventListener('input', () => {
+        task.name = nameInput.value;
+        saveData();
+        renderGanttTimeline(getActiveGanttChart());
+      });
+
+      const startInput = document.createElement('input');
+      startInput.type = 'date';
+      startInput.value = task.start || '';
+
+      const endInput = document.createElement('input');
+      endInput.type = 'date';
+      endInput.value = task.end || '';
+
+      startInput.addEventListener('change', () => {
+        task.start = startInput.value;
+        if (task.end && task.start && task.end < task.start) {
+          task.end = task.start;
+          endInput.value = task.end;
+        }
+        saveData();
+        renderGanttTimeline(getActiveGanttChart());
+      });
+
+      endInput.addEventListener('change', () => {
+        if (endInput.value && task.start && endInput.value < task.start) {
+          endInput.value = task.start;
+        }
+        task.end = endInput.value;
+        saveData();
+        renderGanttTimeline(getActiveGanttChart());
+      });
+
+      const progressInput = document.createElement('input');
+      progressInput.type = 'number';
+      progressInput.min = '0';
+      progressInput.max = '100';
+      progressInput.step = '5';
+      progressInput.value = Number.isFinite(task.progress) ? task.progress : 0;
+      progressInput.addEventListener('change', () => {
+        const value = Number(progressInput.value);
+        if (!Number.isFinite(value)) {
+          task.progress = 0;
+        } else {
+          task.progress = Math.min(100, Math.max(0, value));
+        }
+        progressInput.value = task.progress;
+        saveData();
+        renderGanttTimeline(getActiveGanttChart());
+      });
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = '✕';
+      deleteBtn.addEventListener('click', () => {
+        if (!confirm("Supprimer cette tâche du planning ?")) return;
+        chart.tasks = chart.tasks.filter((t) => t.id !== task.id);
+        saveData();
+        renderGantt();
+      });
+
+      row.appendChild(nameInput);
+      row.appendChild(startInput);
+      row.appendChild(endInput);
+      row.appendChild(progressInput);
+      row.appendChild(deleteBtn);
+      rowsContainer.appendChild(row);
+    });
+  }
+
+  renderGanttTimeline(chart);
+}
+
+function renderGanttTimeline(chart) {
+  const timeline = document.getElementById('gantt-timeline');
+  if (!timeline) return;
+  timeline.innerHTML = '';
+  timeline.style.setProperty('--gantt-day-width', `${GANTT_DAY_WIDTH}px`);
+
+  if (!chart || chart.tasks.length === 0) {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'gantt-timeline-placeholder';
+    placeholder.textContent = 'Ajoutez des tâches avec des dates pour afficher le diagramme.';
+    timeline.appendChild(placeholder);
+    return;
+  }
+
+  const normalizedTasks = chart.tasks.map((task) => {
+    let startDate = parseDateOnly(task.start);
+    let endDate = parseDateOnly(task.end);
+    if (!startDate && endDate) {
+      startDate = new Date(endDate);
+    }
+    if (!endDate && startDate) {
+      endDate = new Date(startDate);
+    }
+    if (!startDate || !endDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      startDate = today;
+      endDate = today;
+    }
+    if (endDate < startDate) {
+      endDate = new Date(startDate);
+    }
+    return { task, startDate, endDate };
+  });
+
+  const startBoundary = normalizedTasks.reduce((min, current) => (current.startDate < min ? current.startDate : min), normalizedTasks[0].startDate);
+  const endBoundary = normalizedTasks.reduce((max, current) => (current.endDate > max ? current.endDate : max), normalizedTasks[0].endDate);
+  const totalDays = Math.max(1, diffDays(startBoundary, endBoundary) + 1);
+
+  const header = document.createElement('div');
+  header.className = 'gantt-timeline-header';
+  for (let dayIndex = 0; dayIndex < totalDays; dayIndex += 1) {
+    const day = new Date(startBoundary);
+    day.setDate(day.getDate() + dayIndex);
+    const label = document.createElement('span');
+    label.textContent = day.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    header.appendChild(label);
+  }
+  timeline.appendChild(header);
+
+  const body = document.createElement('div');
+  body.className = 'gantt-timeline-body';
+  body.style.minWidth = `${totalDays * GANTT_DAY_WIDTH}px`;
+  body.style.height = `${chart.tasks.length * GANTT_ROW_HEIGHT}px`;
+  timeline.appendChild(body);
+
+  const grid = document.createElement('div');
+  grid.className = 'gantt-timeline-grid';
+  grid.style.width = `${totalDays * GANTT_DAY_WIDTH}px`;
+  grid.style.height = `${chart.tasks.length * GANTT_ROW_HEIGHT}px`;
+  for (let dayIndex = 0; dayIndex < totalDays; dayIndex += 1) {
+    const column = document.createElement('span');
+    grid.appendChild(column);
+  }
+  body.appendChild(grid);
+
+  const bars = document.createElement('div');
+  bars.className = 'gantt-timeline-bars';
+  bars.style.width = `${totalDays * GANTT_DAY_WIDTH}px`;
+  bars.style.height = `${chart.tasks.length * GANTT_ROW_HEIGHT}px`;
+  body.appendChild(bars);
+
+  normalizedTasks.forEach(({ task, startDate, endDate }, index) => {
+    const bar = document.createElement('div');
+    bar.className = 'gantt-bar';
+    const offsetDays = Math.max(0, diffDays(startBoundary, startDate));
+    const spanDays = Math.max(1, diffDays(startDate, endDate) + 1);
+    bar.style.left = `${offsetDays * GANTT_DAY_WIDTH}px`;
+    bar.style.top = `${index * GANTT_ROW_HEIGHT + (GANTT_ROW_HEIGHT - 36) / 2}px`;
+    bar.style.width = `${spanDays * GANTT_DAY_WIDTH}px`;
+
+    const progress = Math.min(100, Math.max(0, Number(task.progress) || 0));
+    const progressBar = document.createElement('div');
+    progressBar.className = 'gantt-bar-progress';
+    progressBar.style.width = `${progress}%`;
+    bar.appendChild(progressBar);
+
+    const label = document.createElement('span');
+    label.className = 'gantt-bar-label';
+    const progressLabel = Number.isFinite(progress) ? ` (${Math.round(progress)}%)` : '';
+    label.textContent = `${task.name || 'Tâche'}${progressLabel}`;
+    bar.appendChild(label);
+
+    bars.appendChild(bar);
+  });
+}
+
+function renderGantt() {
+  renderGanttList();
+  renderGanttBoard();
+}
+
+function initGantt() {
+  const addChartBtn = document.getElementById('gantt-add-chart');
+  const renameChartBtn = document.getElementById('gantt-rename-chart');
+  const deleteChartBtn = document.getElementById('gantt-delete-chart');
+  const addTaskBtn = document.getElementById('gantt-add-task');
+
+  if (addChartBtn) {
+    addChartBtn.addEventListener('click', () => {
+      const defaultName = `Schéma ${appData.gantt.charts.length + 1}`;
+      const name = prompt('Nom du nouveau schéma GANTT', defaultName);
+      const trimmed = name ? name.trim() : '';
+      const chart = {
+        id: uid(),
+        name: trimmed || defaultName,
+        tasks: []
+      };
+      appData.gantt.charts.push(chart);
+      appData.gantt.activeChartId = chart.id;
+      saveData();
+      renderGantt();
+    });
+  }
+
+  if (renameChartBtn) {
+    renameChartBtn.addEventListener('click', () => {
+      const chart = getActiveGanttChart();
+      if (!chart) {
+        alert('Créez un schéma avant de le renommer.');
+        return;
+      }
+      const name = prompt('Nouveau nom du schéma', chart.name || 'Schéma sans nom');
+      if (name === null) {
+        return;
+      }
+      const trimmed = name.trim();
+      chart.name = trimmed || chart.name || 'Schéma sans nom';
+      saveData();
+      renderGantt();
+    });
+  }
+
+  if (deleteChartBtn) {
+    deleteChartBtn.addEventListener('click', () => {
+      const chart = getActiveGanttChart();
+      if (!chart) {
+        alert('Aucun schéma à supprimer.');
+        return;
+      }
+      if (!confirm("Supprimer ce schéma GANTT et toutes ses tâches ?")) return;
+      appData.gantt.charts = appData.gantt.charts.filter((item) => item.id !== chart.id);
+      if (appData.gantt.charts.length === 0) {
+        appData.gantt.activeChartId = null;
+      } else {
+        appData.gantt.activeChartId = appData.gantt.charts[0].id;
+      }
+      saveData();
+      renderGantt();
+    });
+  }
+
+  if (addTaskBtn) {
+    addTaskBtn.addEventListener('click', () => {
+      const chart = getActiveGanttChart();
+      if (!chart) {
+        alert('Créez un schéma avant d’ajouter des tâches.');
+        return;
+      }
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      const task = {
+        id: uid(),
+        name: `Nouvelle tâche ${chart.tasks.length + 1}`,
+        start: toISODateString(start),
+        end: toISODateString(end),
+        progress: 0
+      };
+      chart.tasks.push(task);
+      saveData();
+      renderGantt();
+    });
+  }
+
+  renderGantt();
+}
+
 function initTodo() {
   document.getElementById('add-block').addEventListener('click', () => {
     const block = {
@@ -1759,6 +2233,7 @@ async function bootstrap() {
   initStorageControls();
   initCalendar();
   initMindmap();
+  initGantt();
   initTodo();
 }
 
