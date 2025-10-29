@@ -621,9 +621,8 @@ main {
 
 .gantt-layout {
   display: flex;
-  gap: 1.75rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
-  align-items: stretch;
 }
 
 .gantt-sidebar {
@@ -677,10 +676,10 @@ main {
 
 .gantt-main {
   flex: 1;
-  min-width: min(620px, 100%);
+  min-width: 520px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .gantt-header {
@@ -699,8 +698,8 @@ main {
   background: var(--surface);
   border-radius: 12px;
   border: 1px solid var(--border);
-  padding: 1.25rem;
-  min-height: 420px;
+  padding: 1rem;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -713,15 +712,13 @@ main {
 
 .gantt-board {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   flex: 1;
-  min-height: 340px;
+  min-height: 320px;
 }
 
 .gantt-task-list {
-  flex: 0 0 clamp(360px, 34vw, 520px);
-  min-width: min(420px, 100%);
-  max-width: 100%;
+  width: 420px;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -767,7 +764,6 @@ main {
 
 .gantt-timeline {
   flex: 1;
-  min-width: 0;
   overflow: auto;
   position: relative;
   border-radius: 12px;
