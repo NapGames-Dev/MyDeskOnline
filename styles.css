@@ -50,8 +50,8 @@ button:active {
 
 main {
   flex: 1;
-  padding: 1.5rem 2.5rem;
-  width: min(100%, 1840px);
+  padding: 1.5rem 2rem;
+  width: min(100%, 1600px);
   margin: 0 auto;
 }
 
@@ -621,9 +621,8 @@ main {
 
 .gantt-layout {
   display: flex;
-  gap: 1.75rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
-  align-items: stretch;
 }
 
 .gantt-sidebar {
@@ -677,10 +676,10 @@ main {
 
 .gantt-main {
   flex: 1;
-  min-width: min(620px, 100%);
+  min-width: 520px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .gantt-header {
@@ -699,8 +698,8 @@ main {
   background: var(--surface);
   border-radius: 12px;
   border: 1px solid var(--border);
-  padding: 1.25rem;
-  min-height: 420px;
+  padding: 1rem;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -713,15 +712,13 @@ main {
 
 .gantt-board {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   flex: 1;
-  min-height: 340px;
+  min-height: 320px;
 }
 
 .gantt-task-list {
-  flex: 0 0 clamp(380px, 36vw, 560px);
-  min-width: min(440px, 100%);
-  max-width: 100%;
+  width: 420px;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -729,7 +726,7 @@ main {
 
 .gantt-task-row {
   display: grid;
-  grid-template-columns: minmax(240px, 2fr) minmax(140px, 1fr) minmax(140px, 1fr) minmax(84px, 0.7fr) 40px;
+  grid-template-columns: 1fr 130px 130px 130px 40px;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   align-items: center;
@@ -752,10 +749,6 @@ main {
   font: inherit;
 }
 
-.gantt-task-row input[type="number"] {
-  text-align: center;
-}
-
 .gantt-task-row button {
   background: transparent;
   color: var(--muted);
@@ -771,7 +764,6 @@ main {
 
 .gantt-timeline {
   flex: 1;
-  min-width: 0;
   overflow: auto;
   position: relative;
   border-radius: 12px;
