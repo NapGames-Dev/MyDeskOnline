@@ -29,6 +29,17 @@ const CALENDAR_END_MINUTE = (CALENDAR_END_HOUR + 1) * 60;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const GANTT_ROW_HEIGHT = 56;
 const GANTT_DAY_WIDTH = 64;
+const VERSION_INDICATOR_ID = 'version-indicator';
+const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapMx/MyDeskOnline/main/version.json';
+const VERSION_INDICATOR_STATES = {
+  loading: 'loading',
+  upToDate: 'up-to-date',
+  updateAvailable: 'update-available',
+  error: 'error'
+};
+
+let localVersionInfo = null;
+let versionCheckPromise = null;
 
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
@@ -525,6 +536,7 @@ function initTabs() {
   links.forEach((link) => {
     link.addEventListener('click', () => {
       activateTab(link);
+      checkVersionStatus();
     });
   });
 
@@ -532,6 +544,104 @@ function initTabs() {
   if (initiallyActive) {
     activateTab(initiallyActive);
   }
+}
+
+function getVersionIndicator() {
+  return document.getElementById(VERSION_INDICATOR_ID);
+}
+
+function setVersionIndicatorState(state, label) {
+  const indicator = getVersionIndicator();
+  if (!indicator) return;
+  indicator.classList.remove(
+    VERSION_INDICATOR_STATES.loading,
+    VERSION_INDICATOR_STATES.upToDate,
+    VERSION_INDICATOR_STATES.updateAvailable,
+    VERSION_INDICATOR_STATES.error
+  );
+  indicator.classList.add(state);
+  indicator.textContent = label;
+}
+
+async function loadLocalVersionInfo() {
+  if (localVersionInfo) {
+    return localVersionInfo;
+  }
+  const response = await fetch('version.json', { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error('Version locale introuvable');
+  }
+  const payload = await response.json();
+  if (!payload.version) {
+    throw new Error('Version locale manquante');
+  }
+  localVersionInfo = payload;
+  return payload;
+}
+
+function resolveRemoteVersionUrl(localInfo) {
+  if (typeof window !== 'undefined' && window.MYDESK_VERSION_SOURCE) {
+    return window.MYDESK_VERSION_SOURCE;
+  }
+  if (localInfo && typeof localInfo.versionCheckUrl === 'string' && localInfo.versionCheckUrl.trim()) {
+    return localInfo.versionCheckUrl.trim();
+  }
+  return DEFAULT_VERSION_SOURCE;
+}
+
+async function fetchRemoteVersionInfo(remoteUrl) {
+  if (!remoteUrl) {
+    throw new Error('URL distante non définie');
+  }
+  const url = `${remoteUrl}${remoteUrl.includes('?') ? '&' : '?'}t=${Date.now()}`;
+  const response = await fetch(url, { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error(`Impossible de joindre ${remoteUrl}`);
+  }
+  const payload = await response.json();
+  if (!payload.version) {
+    throw new Error('Réponse distante incomplète');
+  }
+  return payload;
+}
+
+function versionsMatch(localInfo, remoteInfo) {
+  return localInfo.version === remoteInfo.version;
+}
+
+function checkVersionStatus() {
+  if (!getVersionIndicator()) {
+    return Promise.resolve();
+  }
+  if (!versionCheckPromise) {
+    setVersionIndicatorState(VERSION_INDICATOR_STATES.loading, 'Vérification...');
+    versionCheckPromise = (async () => {
+      try {
+        const localInfo = await loadLocalVersionInfo();
+        const remoteInfo = await fetchRemoteVersionInfo(resolveRemoteVersionUrl(localInfo));
+        if (versionsMatch(localInfo, remoteInfo)) {
+          setVersionIndicatorState(VERSION_INDICATOR_STATES.upToDate, 'À jour');
+        } else {
+          setVersionIndicatorState(VERSION_INDICATOR_STATES.updateAvailable, 'Mise à jour disponible');
+        }
+      } catch (error) {
+        console.error('Impossible de vérifier la version', error);
+        setVersionIndicatorState(VERSION_INDICATOR_STATES.error, 'Vérification impossible');
+      }
+    })().finally(() => {
+      versionCheckPromise = null;
+    });
+  }
+  return versionCheckPromise;
+}
+
+function initVersionIndicator() {
+  const indicator = getVersionIndicator();
+  if (!indicator) return;
+  indicator.addEventListener('click', () => {
+    checkVersionStatus();
+  });
+  checkVersionStatus();
 }
 
 function initStorageControls() {
@@ -2230,6 +2340,7 @@ function createTodoItemElement(block, item) {
 async function bootstrap() {
   await initData();
   initTabs();
+  initVersionIndicator();
   initStorageControls();
   initCalendar();
   initMindmap();
