@@ -927,3 +927,18 @@ main {
     font-size: 0.85rem;
   }
 }
+
+.embedded-site {
+  margin-top: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  height: 70vh;
+  background: #000;
+}
+
+.embedded-site iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
