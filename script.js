@@ -30,7 +30,11 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const GANTT_ROW_HEIGHT = 56;
 const GANTT_DAY_WIDTH = 64;
 const VERSION_INDICATOR_ID = 'version-indicator';
-const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapMx/MyDeskOnline/main/version.json';
+const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json';
+const LOCAL_VERSION_INFO = {
+  version: '1.1.5',
+  versionCheckUrl: 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json'
+};
 const VERSION_INDICATOR_STATES = {
   loading: 'loading',
   upToDate: 'up-to-date',
@@ -567,6 +571,14 @@ async function loadLocalVersionInfo() {
   if (localVersionInfo) {
     return localVersionInfo;
   }
+
+  // 1. Cas où le site est ouvert en file:// -> on ne tente PAS de fetch local
+  if (typeof window !== 'undefined' && window.location.protocol === 'file:') {
+    localVersionInfo = LOCAL_VERSION_INFO;
+    return localVersionInfo;
+  }
+
+  // 2. Cas où le site est servi en http(s) -> on peut utiliser version.json
   const response = await fetch('version.json', { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Version locale introuvable');
