@@ -64,6 +64,44 @@ main {
   gap: 0.75rem;
 }
 
+.app-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.version-indicator {
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  background: #6b7280;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.version-indicator.loading {
+  background: #6b7280;
+}
+
+.version-indicator.up-to-date {
+  background: #16a34a;
+}
+
+.version-indicator.update-available {
+  background: #dc2626;
+}
+
+.version-indicator.error {
+  background: #d97706;
+}
+
 .tab-bar {
   display: flex;
   gap: 0.5rem;
