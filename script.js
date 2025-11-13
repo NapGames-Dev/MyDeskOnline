@@ -30,7 +30,6 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const GANTT_ROW_HEIGHT = 56;
 const GANTT_DAY_WIDTH = 64;
 const VERSION_INDICATOR_ID = 'version-indicator';
-const LOCAL_VERSION_EMBED_ID = 'local-version-source';
 const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapMx/MyDeskOnline/main/version.json';
 const VERSION_INDICATOR_STATES = {
   loading: 'loading',
@@ -551,60 +550,6 @@ function getVersionIndicator() {
   return document.getElementById(VERSION_INDICATOR_ID);
 }
 
-function getLocalVersionEmbed() {
-  return document.getElementById(LOCAL_VERSION_EMBED_ID);
-}
-
-function parseEmbeddedVersionPayload(embed) {
-  if (!embed) return null;
-  if (embed.__mydeskVersionPayload) {
-    return embed.__mydeskVersionPayload;
-  }
-  try {
-    const doc = embed.contentDocument;
-    if (!doc || !doc.body) {
-      return null;
-    }
-    const raw = doc.body.textContent || '';
-    if (!raw.trim()) {
-      return null;
-    }
-    const payload = JSON.parse(raw);
-    if (!payload.version) {
-      return null;
-    }
-    embed.__mydeskVersionPayload = payload;
-    return payload;
-  } catch (error) {
-    console.warn('Impossible de lire la version locale intégrée', error);
-    return null;
-  }
-}
-
-function loadEmbeddedLocalVersionInfo() {
-  const embed = getLocalVersionEmbed();
-  if (!embed) {
-    return Promise.resolve(null);
-  }
-  const immediate = parseEmbeddedVersionPayload(embed);
-  if (immediate) {
-    return Promise.resolve(immediate);
-  }
-  return new Promise((resolve) => {
-    const onLoad = () => {
-      resolve(parseEmbeddedVersionPayload(embed));
-    };
-    const onError = () => resolve(null);
-    embed.addEventListener('load', onLoad, { once: true });
-    embed.addEventListener('error', onError, { once: true });
-    setTimeout(() => {
-      embed.removeEventListener('load', onLoad);
-      embed.removeEventListener('error', onError);
-      resolve(parseEmbeddedVersionPayload(embed));
-    }, 2000);
-  });
-}
-
 function setVersionIndicatorState(state, label) {
   const indicator = getVersionIndicator();
   if (!indicator) return;
@@ -622,33 +567,16 @@ async function loadLocalVersionInfo() {
   if (localVersionInfo) {
     return localVersionInfo;
   }
-  const preferEmbedded = window.location.protocol === 'file:';
-  if (preferEmbedded) {
-    const embeddedInfo = await loadEmbeddedLocalVersionInfo();
-    if (embeddedInfo) {
-      localVersionInfo = embeddedInfo;
-      return embeddedInfo;
-    }
+  const response = await fetch('version.json', { cache: 'no-store' });
+  if (!response.ok) {
+    throw new Error('Version locale introuvable');
   }
-  try {
-    const response = await fetch('version.json', { cache: 'no-store' });
-    if (!response.ok) {
-      throw new Error('Version locale introuvable');
-    }
-    const payload = await response.json();
-    if (!payload.version) {
-      throw new Error('Version locale manquante');
-    }
-    localVersionInfo = payload;
-    return payload;
-  } catch (error) {
-    const embeddedInfo = await loadEmbeddedLocalVersionInfo();
-    if (embeddedInfo) {
-      localVersionInfo = embeddedInfo;
-      return embeddedInfo;
-    }
-    throw error;
+  const payload = await response.json();
+  if (!payload.version) {
+    throw new Error('Version locale manquante');
   }
+  localVersionInfo = payload;
+  return payload;
 }
 
 function resolveRemoteVersionUrl(localInfo) {

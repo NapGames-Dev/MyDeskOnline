@@ -102,10 +102,6 @@ main {
   background: #d97706;
 }
 
-#local-version-source[hidden] {
-  display: none;
-}
-
 .tab-bar {
   display: flex;
   gap: 0.5rem;
