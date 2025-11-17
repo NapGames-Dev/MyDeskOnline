@@ -71,6 +71,36 @@ main {
   flex-wrap: wrap;
 }
 
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
+}
+
+.language-switcher label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.language-switcher select {
+  font: inherit;
+  border: none;
+  background: transparent;
+  padding: 0.2rem 0.2rem 0.2rem 0.4rem;
+  appearance: none;
+  min-width: 7rem;
+}
+
+.language-switcher select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--primary-light);
+  border-radius: 999px;
+}
+
 .version-indicator {
   font-weight: 600;
   border-radius: 999px;

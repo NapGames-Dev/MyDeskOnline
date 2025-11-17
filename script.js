@@ -42,8 +42,482 @@ const VERSION_INDICATOR_STATES = {
   error: 'error'
 };
 
+const LANGUAGE_KEY = 'mydesk-language';
+const LANGUAGE_FALLBACK = 'fr';
+const SUPPORTED_LANGUAGES = ['fr', 'en', 'vi'];
+const LANGUAGE_LOCALES = {
+  fr: 'fr-FR',
+  en: 'en-US',
+  vi: 'vi-VN'
+};
+
+const translations = {
+  fr: {
+    language: {
+      label: 'Langue',
+      selectAria: 'Choisir la langue',
+      french: 'Français',
+      english: 'Anglais',
+      vietnamese: 'Vietnamien'
+    },
+    app: { title: 'MyDesk Online - By Nap' },
+    tabs: {
+      home: 'Accueil',
+      calendar: 'Agenda',
+      mindmap: 'Cartes mentales',
+      todo: 'To Do List',
+      gantt: 'GANTT',
+      track: "Track'Irigo"
+    },
+    home: {
+      heading: 'Configuration et sauvegarde',
+      description: 'Sélectionnez un dossier local pour enregistrer vos données ou indiquez un chemin manuel. Les données sont également conservées dans votre navigateur pour un accès rapide.',
+      storagePathLabel: 'Chemin de sauvegarde',
+      storagePathPlaceholder: '/chemin/vers/mon/dossier',
+      chooseFolder: 'Choisir un dossier',
+      exportJson: 'Exporter les données (JSON)',
+      importJson: 'Importer un fichier JSON'
+    },
+    storage: {
+      savedToDisk: 'Données enregistrées sur le disque.',
+      saveError: "Impossible d'enregistrer le fichier de données.",
+      loadedFromDisk: 'Données chargées depuis le disque.',
+      loadedFromBrowser: 'Données chargées depuis le navigateur.',
+      folderUnsupported: 'Votre navigateur ne permet pas la sélection de dossier.',
+      permissionDenied: 'Permission refusée pour accéder au dossier.',
+      folderSelected: 'Dossier de sauvegarde sélectionné.',
+      folderSelectionFailed: 'Sélection du dossier annulée ou impossible.',
+      exportSuccess: 'Export JSON généré.',
+      importSuccess: 'Données importées avec succès.',
+      importInvalid: "Le fichier importé n'est pas valide."
+    },
+    version: {
+      checking: 'Vérification...',
+      upToDate: 'À jour',
+      updateAvailable: 'Mise à jour disponible',
+      error: 'Vérification impossible'
+    },
+    calendar: {
+      today: "Aujourd'hui",
+      hint: 'Astuce : utilisez les flèches du clavier pour naviguer de semaine.',
+      eventTypesTitle: "Types d'évènements",
+      eventTypeNameLabel: 'Nom du type',
+      eventTypeNamePlaceholder: 'Nom du type',
+      eventTypeColorLabel: 'Couleur',
+      eventTypeAdd: 'Ajouter un type',
+      eventTypeEmpty: 'Ajoutez un type pour colorer vos évènements.',
+      eventTypeNone: 'Aucun',
+      eventTypeUntitled: 'Sans titre',
+      eventTypeNoName: 'Type sans nom',
+      deleteTypeConfirm: "Supprimer ce type d'évènement ?",
+      defaultTypeName: 'Type {index}',
+      hourLabel: '{hour}h',
+      prevWeekLabel: 'Semaine précédente',
+      nextWeekLabel: 'Semaine suivante',
+      eventDefaultTitle: 'Évènement',
+      eventDeleteTitle: 'Supprimer',
+      newEventTitle: 'Nouvel évènement',
+      eventModal: {
+        createTitle: 'Nouvel évènement',
+        editTitle: "Modifier l'évènement",
+        titleLabel: 'Titre',
+        datetimeLabel: 'Date et heure',
+        durationLabel: 'Durée (minutes)',
+        typeLabel: "Type d'évènement",
+        colorLabel: 'Couleur',
+        recurrenceLabel: 'Répétition',
+        typeNone: 'Aucun',
+        recurrence: {
+          none: 'Aucune',
+          daily: 'Quotidienne',
+          weekly: 'Hebdomadaire',
+          monthly: 'Mensuelle',
+          yearly: 'Annuelle'
+        },
+        save: 'Enregistrer',
+        cancel: 'Annuler'
+      }
+    },
+    mindmap: {
+      addNode: 'Ajouter une bulle',
+      deleteNode: 'Supprimer',
+      linkNodes: 'Relier',
+      linkNodesActive: 'Relier (choisir la cible)',
+      colorLabel: 'Couleur',
+      title: 'Cartes mentales',
+      addMap: 'Nouvelle carte',
+      renameMap: 'Renommer',
+      deleteMap: 'Supprimer la carte',
+      hint: 'Astuce : faites glisser les bulles pour les déplacer, double-cliquez pour renommer.',
+      newBubble: 'Nouvelle bulle',
+      defaultIdeaName: 'Idée {index}',
+      defaultMapName: 'Carte {index}',
+      untitledMap: 'Carte sans nom',
+      untitledNode: 'Sans titre',
+      renamePrompt: 'Nom de la carte',
+      lastMapAlert: 'Impossible de supprimer la dernière carte.',
+      deleteConfirm: 'Supprimer la carte "{name}" ?'
+    },
+    todo: {
+      addBlock: 'Ajouter un bloc',
+      newBlock: 'Nouveau bloc',
+      empty: 'Ajoutez un bloc pour commencer votre liste de tâches.',
+      deleteBlockConfirm: 'Supprimer ce bloc et toutes ses tâches ?',
+      deleteBlock: 'Supprimer',
+      addTask: 'Ajouter une tâche',
+      newTask: 'Nouvelle tâche',
+      defaultItemName: 'Tâche {index}',
+      defaultBlockName: 'Bloc {index}'
+    },
+    gantt: {
+      sidebarTitle: 'Schémas GANTT',
+      addChart: 'Nouveau schéma',
+      renameChart: 'Renommer',
+      deleteChart: 'Supprimer',
+      headerTitle: 'Créez un schéma GANTT pour commencer',
+      headerHint: 'Ajoutez des tâches avec leurs dates de début et de fin pour visualiser votre planning.',
+      addTask: 'Ajouter une tâche',
+      emptySelection: 'Aucun schéma sélectionné.',
+      table: {
+        task: 'Tâche',
+        start: 'Début',
+        end: 'Fin',
+        progress: 'Progression'
+      },
+      listEmpty: 'Créez un schéma GANTT pour commencer.',
+      boardEmpty: 'Ajoutez une tâche pour construire votre planning.',
+      timelinePlaceholder: 'Ajoutez des tâches avec des dates pour afficher le diagramme.',
+      newChartPrompt: 'Nom du nouveau schéma GANTT',
+      defaultChartName: 'Schéma {index}',
+      renameChartPrompt: 'Nouveau nom du schéma',
+      chartUntitled: 'Schéma sans nom',
+      renameChartAlert: 'Créez un schéma avant de le renommer.',
+      noChartToDelete: 'Aucun schéma à supprimer.',
+      deleteChartConfirm: 'Supprimer ce schéma GANTT et toutes ses tâches ?',
+      addTaskAlert: 'Créez un schéma avant d’ajouter des tâches.',
+      newTaskName: 'Nouvelle tâche {index}',
+      defaultTaskName: 'Tâche {index}',
+      deleteTaskConfirm: 'Supprimer cette tâche du planning ?',
+      barFallback: 'Tâche'
+    },
+    track: {
+      iframeTitle: "Track'Irigo – Carte Irigo"
+    }
+  },
+  en: {
+    language: {
+      label: 'Language',
+      selectAria: 'Choose a language',
+      french: 'French',
+      english: 'English',
+      vietnamese: 'Vietnamese'
+    },
+    app: { title: 'MyDesk Online - By Nap' },
+    tabs: {
+      home: 'Home',
+      calendar: 'Calendar',
+      mindmap: 'Mind Maps',
+      todo: 'To-Do List',
+      gantt: 'GANTT',
+      track: "Track'Irigo"
+    },
+    home: {
+      heading: 'Configuration and backup',
+      description: 'Select a local folder to store your data or enter a manual path. Your data is also kept in the browser for quick access.',
+      storagePathLabel: 'Backup path',
+      storagePathPlaceholder: '/path/to/my/folder',
+      chooseFolder: 'Choose a folder',
+      exportJson: 'Export data (JSON)',
+      importJson: 'Import a JSON file'
+    },
+    storage: {
+      savedToDisk: 'Data saved to disk.',
+      saveError: 'Unable to save the data file.',
+      loadedFromDisk: 'Data loaded from disk.',
+      loadedFromBrowser: 'Data loaded from the browser.',
+      folderUnsupported: 'Your browser does not allow folder selection.',
+      permissionDenied: 'Permission denied to access the folder.',
+      folderSelected: 'Backup folder selected.',
+      folderSelectionFailed: 'Folder selection was canceled or failed.',
+      exportSuccess: 'JSON export generated.',
+      importSuccess: 'Data imported successfully.',
+      importInvalid: 'The imported file is not valid.'
+    },
+    version: {
+      checking: 'Checking...',
+      upToDate: 'Up to date',
+      updateAvailable: 'Update available',
+      error: 'Unable to check'
+    },
+    calendar: {
+      today: 'Today',
+      hint: 'Tip: use the arrow keys to move between weeks.',
+      eventTypesTitle: 'Event types',
+      eventTypeNameLabel: 'Type name',
+      eventTypeNamePlaceholder: 'Type name',
+      eventTypeColorLabel: 'Color',
+      eventTypeAdd: 'Add type',
+      eventTypeEmpty: 'Add a type to color your events.',
+      eventTypeNone: 'None',
+      eventTypeUntitled: 'Untitled',
+      eventTypeNoName: 'Unnamed type',
+      deleteTypeConfirm: 'Delete this event type?',
+      defaultTypeName: 'Type {index}',
+      hourLabel: '{hour}:00',
+      prevWeekLabel: 'Previous week',
+      nextWeekLabel: 'Next week',
+      eventDefaultTitle: 'Event',
+      eventDeleteTitle: 'Delete',
+      newEventTitle: 'New event',
+      eventModal: {
+        createTitle: 'New event',
+        editTitle: 'Edit event',
+        titleLabel: 'Title',
+        datetimeLabel: 'Date & time',
+        durationLabel: 'Duration (minutes)',
+        typeLabel: 'Event type',
+        colorLabel: 'Color',
+        recurrenceLabel: 'Repeat',
+        typeNone: 'None',
+        recurrence: {
+          none: 'None',
+          daily: 'Daily',
+          weekly: 'Weekly',
+          monthly: 'Monthly',
+          yearly: 'Yearly'
+        },
+        save: 'Save',
+        cancel: 'Cancel'
+      }
+    },
+    mindmap: {
+      addNode: 'Add bubble',
+      deleteNode: 'Delete',
+      linkNodes: 'Link',
+      linkNodesActive: 'Link (choose target)',
+      colorLabel: 'Color',
+      title: 'Mind maps',
+      addMap: 'New map',
+      renameMap: 'Rename',
+      deleteMap: 'Delete map',
+      hint: 'Tip: drag bubbles to move them, double-click to rename.',
+      newBubble: 'New bubble',
+      defaultIdeaName: 'Idea {index}',
+      defaultMapName: 'Map {index}',
+      untitledMap: 'Untitled map',
+      untitledNode: 'Untitled',
+      renamePrompt: 'Map name',
+      lastMapAlert: 'The last map cannot be deleted.',
+      deleteConfirm: 'Delete the map "{name}"?'
+    },
+    todo: {
+      addBlock: 'Add block',
+      newBlock: 'New block',
+      empty: 'Add a block to start your task list.',
+      deleteBlockConfirm: 'Delete this block and all of its tasks?',
+      deleteBlock: 'Delete',
+      addTask: 'Add task',
+      newTask: 'New task',
+      defaultItemName: 'Task {index}',
+      defaultBlockName: 'Block {index}'
+    },
+    gantt: {
+      sidebarTitle: 'GANTT charts',
+      addChart: 'New chart',
+      renameChart: 'Rename',
+      deleteChart: 'Delete',
+      headerTitle: 'Create a GANTT chart to get started',
+      headerHint: 'Add tasks with their start and end dates to visualize your plan.',
+      addTask: 'Add task',
+      emptySelection: 'No chart selected.',
+      table: {
+        task: 'Task',
+        start: 'Start',
+        end: 'End',
+        progress: 'Progress'
+      },
+      listEmpty: 'Create a GANTT chart to get started.',
+      boardEmpty: 'Add a task to build your plan.',
+      timelinePlaceholder: 'Add dated tasks to display the timeline.',
+      newChartPrompt: 'Name of the new GANTT chart',
+      defaultChartName: 'Chart {index}',
+      renameChartPrompt: 'New chart name',
+      chartUntitled: 'Untitled chart',
+      renameChartAlert: 'Create a chart before renaming it.',
+      noChartToDelete: 'No chart to delete.',
+      deleteChartConfirm: 'Delete this GANTT chart and all of its tasks?',
+      addTaskAlert: 'Create a chart before adding tasks.',
+      newTaskName: 'New task {index}',
+      defaultTaskName: 'Task {index}',
+      deleteTaskConfirm: 'Delete this task from the schedule?',
+      barFallback: 'Task'
+    },
+    track: {
+      iframeTitle: "Track'Irigo – Irigo map"
+    }
+  },
+  vi: {
+    language: {
+      label: 'Ngôn ngữ',
+      selectAria: 'Chọn ngôn ngữ',
+      french: 'Tiếng Pháp',
+      english: 'Tiếng Anh',
+      vietnamese: 'Tiếng Việt'
+    },
+    app: { title: 'MyDesk Online - By Nap' },
+    tabs: {
+      home: 'Trang chủ',
+      calendar: 'Lịch',
+      mindmap: 'Sơ đồ tư duy',
+      todo: 'Danh sách công việc',
+      gantt: 'GANTT',
+      track: "Track'Irigo"
+    },
+    home: {
+      heading: 'Thiết lập và sao lưu',
+      description: 'Chọn một thư mục cục bộ để lưu dữ liệu của bạn hoặc nhập đường dẫn thủ công. Dữ liệu cũng được lưu trong trình duyệt để truy cập nhanh.',
+      storagePathLabel: 'Đường dẫn sao lưu',
+      storagePathPlaceholder: '/duong/dan/den/thu-muc',
+      chooseFolder: 'Chọn thư mục',
+      exportJson: 'Xuất dữ liệu (JSON)',
+      importJson: 'Nhập tệp JSON'
+    },
+    storage: {
+      savedToDisk: 'Đã lưu dữ liệu vào đĩa.',
+      saveError: 'Không thể lưu tệp dữ liệu.',
+      loadedFromDisk: 'Đã tải dữ liệu từ đĩa.',
+      loadedFromBrowser: 'Đã tải dữ liệu từ trình duyệt.',
+      folderUnsupported: 'Trình duyệt của bạn không cho phép chọn thư mục.',
+      permissionDenied: 'Không được phép truy cập thư mục.',
+      folderSelected: 'Đã chọn thư mục sao lưu.',
+      folderSelectionFailed: 'Việc chọn thư mục bị hủy hoặc thất bại.',
+      exportSuccess: 'Đã tạo tệp JSON xuất.',
+      importSuccess: 'Nhập dữ liệu thành công.',
+      importInvalid: 'Tệp được nhập không hợp lệ.'
+    },
+    version: {
+      checking: 'Đang kiểm tra...',
+      upToDate: 'Đã cập nhật',
+      updateAvailable: 'Có bản cập nhật',
+      error: 'Không thể kiểm tra'
+    },
+    calendar: {
+      today: 'Hôm nay',
+      hint: 'Mẹo: dùng các phím mũi tên để chuyển tuần.',
+      eventTypesTitle: 'Loại sự kiện',
+      eventTypeNameLabel: 'Tên loại',
+      eventTypeNamePlaceholder: 'Tên loại',
+      eventTypeColorLabel: 'Màu sắc',
+      eventTypeAdd: 'Thêm loại',
+      eventTypeEmpty: 'Thêm một loại để tô màu sự kiện của bạn.',
+      eventTypeNone: 'Không',
+      eventTypeUntitled: 'Chưa đặt tên',
+      eventTypeNoName: 'Loại chưa đặt tên',
+      deleteTypeConfirm: 'Xóa loại sự kiện này?',
+      defaultTypeName: 'Loại {index}',
+      hourLabel: '{hour}h',
+      prevWeekLabel: 'Tuần trước',
+      nextWeekLabel: 'Tuần sau',
+      eventDefaultTitle: 'Sự kiện',
+      eventDeleteTitle: 'Xóa',
+      newEventTitle: 'Sự kiện mới',
+      eventModal: {
+        createTitle: 'Sự kiện mới',
+        editTitle: 'Chỉnh sửa sự kiện',
+        titleLabel: 'Tiêu đề',
+        datetimeLabel: 'Ngày & giờ',
+        durationLabel: 'Thời lượng (phút)',
+        typeLabel: 'Loại sự kiện',
+        colorLabel: 'Màu sắc',
+        recurrenceLabel: 'Lặp lại',
+        typeNone: 'Không',
+        recurrence: {
+          none: 'Không',
+          daily: 'Hằng ngày',
+          weekly: 'Hằng tuần',
+          monthly: 'Hằng tháng',
+          yearly: 'Hằng năm'
+        },
+        save: 'Lưu',
+        cancel: 'Hủy'
+      }
+    },
+    mindmap: {
+      addNode: 'Thêm bong bóng',
+      deleteNode: 'Xóa',
+      linkNodes: 'Liên kết',
+      linkNodesActive: 'Liên kết (chọn nút đích)',
+      colorLabel: 'Màu sắc',
+      title: 'Sơ đồ tư duy',
+      addMap: 'Sơ đồ mới',
+      renameMap: 'Đổi tên',
+      deleteMap: 'Xóa sơ đồ',
+      hint: 'Mẹo: kéo các bong bóng để di chuyển chúng, nhấp đúp để đổi tên.',
+      newBubble: 'Bong bóng mới',
+      defaultIdeaName: 'Ý tưởng {index}',
+      defaultMapName: 'Sơ đồ {index}',
+      untitledMap: 'Sơ đồ chưa có tên',
+      untitledNode: 'Chưa có tên',
+      renamePrompt: 'Tên sơ đồ',
+      lastMapAlert: 'Không thể xóa sơ đồ cuối cùng.',
+      deleteConfirm: 'Xóa sơ đồ "{name}"?'
+    },
+    todo: {
+      addBlock: 'Thêm khối',
+      newBlock: 'Khối mới',
+      empty: 'Thêm một khối để bắt đầu danh sách công việc.',
+      deleteBlockConfirm: 'Xóa khối này và toàn bộ công việc bên trong?',
+      deleteBlock: 'Xóa',
+      addTask: 'Thêm công việc',
+      newTask: 'Công việc mới',
+      defaultItemName: 'Công việc {index}',
+      defaultBlockName: 'Khối {index}'
+    },
+    gantt: {
+      sidebarTitle: 'Sơ đồ GANTT',
+      addChart: 'Sơ đồ mới',
+      renameChart: 'Đổi tên',
+      deleteChart: 'Xóa',
+      headerTitle: 'Tạo sơ đồ GANTT để bắt đầu',
+      headerHint: 'Thêm các nhiệm vụ với ngày bắt đầu và kết thúc để trực quan hóa kế hoạch của bạn.',
+      addTask: 'Thêm nhiệm vụ',
+      emptySelection: 'Chưa chọn sơ đồ nào.',
+      table: {
+        task: 'Nhiệm vụ',
+        start: 'Bắt đầu',
+        end: 'Kết thúc',
+        progress: 'Tiến độ'
+      },
+      listEmpty: 'Tạo một sơ đồ GANTT để bắt đầu.',
+      boardEmpty: 'Thêm một nhiệm vụ để xây dựng kế hoạch của bạn.',
+      timelinePlaceholder: 'Thêm các nhiệm vụ có ngày để hiển thị biểu đồ.',
+      newChartPrompt: 'Tên sơ đồ GANTT mới',
+      defaultChartName: 'Sơ đồ {index}',
+      renameChartPrompt: 'Tên sơ đồ mới',
+      chartUntitled: 'Sơ đồ chưa có tên',
+      renameChartAlert: 'Hãy tạo một sơ đồ trước khi đổi tên.',
+      noChartToDelete: 'Không có sơ đồ nào để xóa.',
+      deleteChartConfirm: 'Xóa sơ đồ GANTT này và mọi nhiệm vụ của nó?',
+      addTaskAlert: 'Hãy tạo một sơ đồ trước khi thêm nhiệm vụ.',
+      newTaskName: 'Nhiệm vụ mới {index}',
+      defaultTaskName: 'Nhiệm vụ {index}',
+      deleteTaskConfirm: 'Xóa nhiệm vụ này khỏi kế hoạch?',
+      barFallback: 'Nhiệm vụ'
+    },
+    track: {
+      iframeTitle: "Track'Irigo – Bản đồ Irigo"
+    }
+  }
+};
+
+let currentLanguage = getInitialLanguage();
+document.documentElement.setAttribute('lang', currentLanguage);
 let localVersionInfo = null;
 let versionCheckPromise = null;
+let versionIndicatorStatus = {
+  state: VERSION_INDICATOR_STATES.loading,
+  labelKey: 'version.checking'
+};
 
 let appData = cloneDefault();
 let currentWeekStart = startOfWeek(new Date());
@@ -57,6 +531,7 @@ let handleDBPromise = null;
 let saveTimer = null;
 let calendarHourHeight = 48;
 let resizeState = null;
+let lastStorageStatus = null;
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(defaultData));
@@ -80,14 +555,155 @@ function formatDate(date, options = {}) {
   if (options.year) {
     formatOptions.year = 'numeric';
   }
-  return date.toLocaleDateString('fr-FR', formatOptions);
+  return date.toLocaleDateString(getCurrentLocale(), formatOptions);
 }
 
 function formatTime(date) {
-  return date.toLocaleTimeString('fr-FR', {
+  return date.toLocaleTimeString(getCurrentLocale(), {
     hour: '2-digit',
     minute: '2-digit'
   });
+}
+
+function getInitialLanguage() {
+  try {
+    const stored = localStorage.getItem(LANGUAGE_KEY);
+    if (stored && SUPPORTED_LANGUAGES.includes(stored)) {
+      return stored;
+    }
+  } catch (error) {
+    console.warn('Impossible de lire la langue sauvegardée', error);
+  }
+  const browserLanguage =
+    typeof navigator !== 'undefined' && navigator.language
+      ? navigator.language.slice(0, 2).toLowerCase()
+      : LANGUAGE_FALLBACK;
+  if (SUPPORTED_LANGUAGES.includes(browserLanguage)) {
+    return browserLanguage;
+  }
+  return LANGUAGE_FALLBACK;
+}
+
+function persistLanguagePreference(language) {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, language);
+  } catch (error) {
+    console.warn('Impossible de stocker la langue sélectionnée', error);
+  }
+}
+
+function getCurrentLocale() {
+  return LANGUAGE_LOCALES[currentLanguage] || LANGUAGE_LOCALES[LANGUAGE_FALLBACK];
+}
+
+function t(key, variables = {}) {
+  const resolveValue = (language) => {
+    const source = translations[language];
+    if (!source) return undefined;
+    return key.split('.').reduce((acc, part) => {
+      if (acc && typeof acc === 'object' && part in acc) {
+        return acc[part];
+      }
+      return undefined;
+    }, source);
+  };
+  let template = resolveValue(currentLanguage);
+  if (typeof template === 'undefined') {
+    template = resolveValue(LANGUAGE_FALLBACK);
+  }
+  if (typeof template === 'string') {
+    return template.replace(/\{(\w+)\}/g, (match, token) =>
+      Object.prototype.hasOwnProperty.call(variables, token) ? variables[token] : match
+    );
+  }
+  return template !== undefined ? template : key;
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-i18n]').forEach((element) => {
+    const key = element.getAttribute('data-i18n');
+    if (!key) return;
+    const translation = t(key);
+    if (typeof translation === 'string') {
+      element.textContent = translation;
+    }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
+    const key = element.getAttribute('data-i18n-placeholder');
+    if (key) {
+      element.setAttribute('placeholder', t(key));
+    }
+  });
+  document.querySelectorAll('[data-i18n-title]').forEach((element) => {
+    const key = element.getAttribute('data-i18n-title');
+    if (key) {
+      element.setAttribute('title', t(key));
+    }
+  });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+    const key = element.getAttribute('data-i18n-aria-label');
+    if (key) {
+      element.setAttribute('aria-label', t(key));
+    }
+  });
+  document.title = t('app.title');
+  const select = document.getElementById('language-select');
+  if (select) {
+    select.value = currentLanguage;
+  }
+}
+
+function refreshVersionIndicator() {
+  if (versionIndicatorStatus && versionIndicatorStatus.labelKey) {
+    setVersionIndicatorState(versionIndicatorStatus.state, versionIndicatorStatus.labelKey);
+  }
+}
+
+function refreshStorageStatus() {
+  if (lastStorageStatus) {
+    const { messageKey, type, variables } = lastStorageStatus;
+    updateStorageStatus(messageKey, type, variables);
+  }
+}
+
+function setLanguage(language) {
+  if (!SUPPORTED_LANGUAGES.includes(language)) {
+    return;
+  }
+  if (language === currentLanguage) {
+    applyTranslations();
+    refreshStorageStatus();
+    refreshVersionIndicator();
+    syncLinkButton();
+    return;
+  }
+  currentLanguage = language;
+  document.documentElement.setAttribute('lang', currentLanguage);
+  persistLanguagePreference(language);
+  applyTranslations();
+  renderCalendar();
+  renderEventTypes();
+  renderMindmapList();
+  renderMindmap();
+  renderGantt();
+  renderTodo();
+  refreshStorageStatus();
+  refreshVersionIndicator();
+  syncLinkButton();
+}
+
+function initLocalization() {
+  applyTranslations();
+  const select = document.getElementById('language-select');
+  if (select) {
+    select.value = currentLanguage;
+    select.addEventListener('change', (event) => {
+      setLanguage(event.target.value);
+    });
+  }
+  refreshVersionIndicator();
+  refreshStorageStatus();
+  syncLinkButton();
 }
 
 function toISODateString(date) {
@@ -262,10 +878,10 @@ function scheduleFileSave() {
       const writable = await fileHandle.createWritable();
       await writable.write(JSON.stringify(appData, null, 2));
       await writable.close();
-      updateStorageStatus('Données enregistrées sur le disque.', 'success');
+      updateStorageStatus('storage.savedToDisk', 'success');
     } catch (error) {
       console.error('Écriture du fichier impossible', error);
-      updateStorageStatus("Impossible d'enregistrer le fichier de données.", 'error');
+      updateStorageStatus('storage.saveError', 'error');
     }
   }, 600);
 }
@@ -289,7 +905,7 @@ function migrateData() {
   appData.calendar.types = appData.calendar.types.map((type, index) => {
     const normalized = {
       id: type && type.id ? type.id : uid(),
-      name: type && type.name ? type.name : `Type ${index + 1}`,
+      name: type && type.name ? type.name : t('calendar.defaultTypeName', { index: index + 1 }),
       color: type && type.color ? type.color : DEFAULT_EVENT_COLOR
     };
     return normalized;
@@ -333,7 +949,7 @@ function migrateData() {
       maps: [
         {
           id: defaultId,
-          name: 'Carte 1',
+          name: t('mindmap.defaultMapName', { index: 1 }),
           nodes,
           links
         }
@@ -352,7 +968,7 @@ function migrateData() {
       ? map.nodes.map((node, nodeIndex) => {
           const normalizedNode = {
             id: node && node.id ? node.id : uid(),
-            title: node && node.title ? node.title : `Idée ${nodeIndex + 1}`,
+            title: node && node.title ? node.title : t('mindmap.defaultIdeaName', { index: nodeIndex + 1 }),
             color: node && node.color ? node.color : '#4e73df',
             x: typeof node === 'object' && typeof node.x === 'number' ? node.x : 100,
             y: typeof node === 'object' && typeof node.y === 'number' ? node.y : 100
@@ -374,7 +990,7 @@ function migrateData() {
 
     return {
       id: map && map.id ? map.id : uid(),
-      name: map && map.name ? map.name : `Carte ${index + 1}`,
+      name: map && map.name ? map.name : t('mindmap.defaultMapName', { index: index + 1 }),
       nodes,
       links
     };
@@ -382,7 +998,7 @@ function migrateData() {
 
   if (appData.mindmap.maps.length === 0) {
     const fallbackId = uid();
-    appData.mindmap.maps.push({ id: fallbackId, name: 'Carte 1', nodes: [], links: [] });
+    appData.mindmap.maps.push({ id: fallbackId, name: t('mindmap.defaultMapName', { index: 1 }), nodes: [], links: [] });
     appData.mindmap.activeMapId = fallbackId;
   }
 
@@ -402,14 +1018,14 @@ function migrateData() {
     const items = Array.isArray(block && block.items)
       ? block.items.map((item, itemIndex) => ({
           id: item && item.id ? item.id : uid(),
-          text: item && item.text ? item.text : `Tâche ${itemIndex + 1}`,
+          text: item && item.text ? item.text : t('todo.defaultItemName', { index: itemIndex + 1 }),
           done: Boolean(item && item.done)
         }))
       : [];
 
     return {
       id: block && block.id ? block.id : uid(),
-      title: block && block.title ? block.title : `Bloc ${index + 1}`,
+      title: block && block.title ? block.title : t('todo.defaultBlockName', { index: index + 1 }),
       items
     };
   });
@@ -456,7 +1072,7 @@ function migrateData() {
           const clampedProgress = Number.isFinite(rawProgress) ? Math.min(100, Math.max(0, rawProgress)) : 0;
           return {
             id: task && task.id ? task.id : uid(),
-            name: task && task.name ? task.name : `Tâche ${taskIndex + 1}`,
+            name: task && task.name ? task.name : t('gantt.defaultTaskName', { index: taskIndex + 1 }),
             start: normalizedStart,
             end: normalizedEnd,
             progress: clampedProgress
@@ -465,7 +1081,7 @@ function migrateData() {
       : [];
     return {
       id: chartId,
-      name: chart && chart.name ? chart.name : `Schéma ${index + 1}`,
+      name: chart && chart.name ? chart.name : t('gantt.defaultChartName', { index: index + 1 }),
       tasks
     };
   });
@@ -477,10 +1093,11 @@ function migrateData() {
   }
 }
 
-function updateStorageStatus(message, type = 'info') {
+function updateStorageStatus(messageKey, type = 'info', variables = {}) {
+  lastStorageStatus = { messageKey, type, variables };
   const status = document.getElementById('storage-status');
   if (!status) return;
-  status.textContent = message;
+  status.textContent = t(messageKey, variables);
   status.className = `storage-status ${type}`;
 }
 
@@ -508,9 +1125,9 @@ async function initData() {
         ...(fileData.gantt ? fileData.gantt : appData.gantt)
       }
     };
-    updateStorageStatus('Données chargées depuis le disque.', 'success');
+    updateStorageStatus('storage.loadedFromDisk', 'success');
   } else {
-    updateStorageStatus('Données chargées depuis le navigateur.', 'info');
+    updateStorageStatus('storage.loadedFromBrowser', 'info');
   }
   migrateData();
   if (appData.calendar.lastWeekStart) {
@@ -554,7 +1171,8 @@ function getVersionIndicator() {
   return document.getElementById(VERSION_INDICATOR_ID);
 }
 
-function setVersionIndicatorState(state, label) {
+function setVersionIndicatorState(state, labelKey) {
+  versionIndicatorStatus = { state, labelKey };
   const indicator = getVersionIndicator();
   if (!indicator) return;
   indicator.classList.remove(
@@ -564,7 +1182,7 @@ function setVersionIndicatorState(state, label) {
     VERSION_INDICATOR_STATES.error
   );
   indicator.classList.add(state);
-  indicator.textContent = label;
+  indicator.textContent = t(labelKey);
 }
 
 async function loadLocalVersionInfo() {
@@ -626,19 +1244,19 @@ function checkVersionStatus() {
     return Promise.resolve();
   }
   if (!versionCheckPromise) {
-    setVersionIndicatorState(VERSION_INDICATOR_STATES.loading, 'Vérification...');
+    setVersionIndicatorState(VERSION_INDICATOR_STATES.loading, 'version.checking');
     versionCheckPromise = (async () => {
       try {
         const localInfo = await loadLocalVersionInfo();
         const remoteInfo = await fetchRemoteVersionInfo(resolveRemoteVersionUrl(localInfo));
         if (versionsMatch(localInfo, remoteInfo)) {
-          setVersionIndicatorState(VERSION_INDICATOR_STATES.upToDate, 'À jour');
+          setVersionIndicatorState(VERSION_INDICATOR_STATES.upToDate, 'version.upToDate');
         } else {
-          setVersionIndicatorState(VERSION_INDICATOR_STATES.updateAvailable, 'Mise à jour disponible');
+          setVersionIndicatorState(VERSION_INDICATOR_STATES.updateAvailable, 'version.updateAvailable');
         }
       } catch (error) {
         console.error('Impossible de vérifier la version', error);
-        setVersionIndicatorState(VERSION_INDICATOR_STATES.error, 'Vérification impossible');
+        setVersionIndicatorState(VERSION_INDICATOR_STATES.error, 'version.error');
       }
     })().finally(() => {
       versionCheckPromise = null;
@@ -671,14 +1289,14 @@ function initStorageControls() {
 
   chooseBtn.addEventListener('click', async () => {
     if (!window.showDirectoryPicker) {
-      updateStorageStatus("Votre navigateur ne permet pas la sélection de dossier.", 'error');
+      updateStorageStatus('storage.folderUnsupported', 'error');
       return;
     }
     try {
       const handle = await window.showDirectoryPicker();
       const granted = await ensurePermission(handle);
       if (!granted) {
-        updateStorageStatus("Permission refusée pour accéder au dossier.", 'error');
+        updateStorageStatus('storage.permissionDenied', 'error');
         return;
       }
       folderHandle = handle;
@@ -686,11 +1304,11 @@ function initStorageControls() {
       appData.storagePath = handle && handle.name ? handle.name : '';
       saveData();
       pathInput.value = appData.storagePath;
-      updateStorageStatus('Dossier de sauvegarde sélectionné.', 'success');
+      updateStorageStatus('storage.folderSelected', 'success');
     } catch (error) {
       if (!error || error.name !== 'AbortError') {
         console.error(error);
-        updateStorageStatus("Sélection du dossier annulée ou impossible.", 'error');
+        updateStorageStatus('storage.folderSelectionFailed', 'error');
       }
     }
   });
@@ -704,7 +1322,7 @@ function initStorageControls() {
     a.download = `mydesk-export-${timestamp}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
-    updateStorageStatus('Export JSON généré.', 'success');
+    updateStorageStatus('storage.exportSuccess', 'success');
   });
 
   importBtn.addEventListener('click', () => {
@@ -750,10 +1368,10 @@ function initStorageControls() {
       renderMindmap();
       renderTodo();
       pathInput.value = appData.storagePath ? appData.storagePath : '';
-      updateStorageStatus('Données importées avec succès.', 'success');
+      updateStorageStatus('storage.importSuccess', 'success');
     } catch (error) {
       console.error(error);
-      updateStorageStatus("Le fichier importé n'est pas valide.", 'error');
+      updateStorageStatus('storage.importInvalid', 'error');
     }
     importInput.value = '';
   });
@@ -781,7 +1399,7 @@ function renderCalendar() {
   days.forEach((day) => {
     const header = document.createElement('div');
     header.className = 'day-header';
-    const weekday = day.toLocaleDateString('fr-FR', { weekday: 'long' });
+    const weekday = day.toLocaleDateString(getCurrentLocale(), { weekday: 'long' });
     const formattedWeekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
     header.innerHTML = `<span>${formattedWeekday}</span><strong>${day.getDate()}</strong>`;
     if (day.getTime() === today.getTime()) {
@@ -794,7 +1412,8 @@ function renderCalendar() {
   for (let hour = CALENDAR_START_HOUR; hour <= CALENDAR_END_HOUR; hour += 1) {
     const timeCell = document.createElement('div');
     timeCell.className = 'time-slot';
-    timeCell.textContent = `${hour.toString().padStart(2, '0')}h`;
+    const paddedHour = hour.toString().padStart(2, '0');
+    timeCell.textContent = t('calendar.hourLabel', { hour: paddedHour });
     grid.appendChild(timeCell);
 
     days.forEach((day, index) => {
@@ -828,8 +1447,9 @@ function updateWeekLabel() {
   if (!label) return;
   const endDate = new Date(currentWeekStart);
   endDate.setDate(endDate.getDate() + 6);
-  const startText = currentWeekStart.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-  const endText = endDate.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  const locale = getCurrentLocale();
+  const startText = currentWeekStart.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
+  const endText = endDate.toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' });
   label.textContent = `${startText} – ${endText}`;
 }
 
@@ -867,12 +1487,12 @@ function updateEventTypeSelect(selectedId) {
   select.innerHTML = '';
   const noneOption = document.createElement('option');
   noneOption.value = '';
-  noneOption.textContent = 'Aucun';
+  noneOption.textContent = t('calendar.eventTypeNone');
   select.appendChild(noneOption);
   appData.calendar.types.forEach((type) => {
     const option = document.createElement('option');
     option.value = type.id;
-    option.textContent = type.name || 'Sans titre';
+    option.textContent = type.name || t('calendar.eventTypeUntitled');
     select.appendChild(option);
   });
   if (current && appData.calendar.types.some((type) => type.id === current)) {
@@ -902,7 +1522,7 @@ function renderEventTypes() {
   if (appData.calendar.types.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'event-type-empty';
-    empty.textContent = 'Ajoutez un type pour colorer vos évènements.';
+    empty.textContent = t('calendar.eventTypeEmpty');
     list.appendChild(empty);
   } else {
     appData.calendar.types.forEach((type) => {
@@ -922,7 +1542,7 @@ function renderEventTypes() {
 
       const nameInput = document.createElement('input');
       nameInput.type = 'text';
-      nameInput.value = type.name || 'Sans titre';
+      nameInput.value = type.name || t('calendar.eventTypeUntitled');
       nameInput.addEventListener('input', () => {
         type.name = nameInput.value;
         updateEventTypeSelect(type.id);
@@ -931,7 +1551,7 @@ function renderEventTypes() {
       nameInput.addEventListener('blur', () => {
         const trimmed = nameInput.value.trim();
         if (!trimmed) {
-          type.name = 'Type sans nom';
+          type.name = t('calendar.eventTypeNoName');
           nameInput.value = type.name;
         } else {
           type.name = trimmed;
@@ -945,7 +1565,7 @@ function renderEventTypes() {
       deleteBtn.type = 'button';
       deleteBtn.textContent = '✕';
       deleteBtn.addEventListener('click', () => {
-        if (!confirm('Supprimer ce type d\'évènement ?')) return;
+        if (!confirm(t('calendar.deleteTypeConfirm'))) return;
         removeEventType(type.id);
       });
 
@@ -1097,11 +1717,12 @@ function renderCalendarEvents() {
 
     // Contenu (titre + horaire)
     const endDate = new Date(startDate.getTime() + occ.duration * 60000);
+    const displayTitle = occ.sourceEvent.title || t('calendar.eventDefaultTitle');
     eventEl.innerHTML = `
       <div class="resize-handle top"></div>
       <div class="event-header">
-        <div class="title">${occ.sourceEvent.title || 'Évènement'}</div>
-        <button class="delete-event" title="Supprimer">✕</button>
+        <div class="title">${displayTitle}</div>
+        <button class="delete-event" title="${t('calendar.eventDeleteTitle')}">✕</button>
       </div>
       <div class="time-range">${formatTime(startDate)} – ${formatTime(endDate)}</div>
       <div class="resize-handle bottom"></div>
@@ -1335,7 +1956,7 @@ function openEventModal({ start, event: existingEvent = null, occurrenceStart = 
   updateEventTypeSelect(existingEvent && existingEvent.typeId ? existingEvent.typeId : '');
 
   if (existingEvent) {
-    modalTitle.textContent = 'Modifier l\'évènement';
+    modalTitle.textContent = t('calendar.eventModal.editTitle');
     titleInput.value = existingEvent.title || '';
     datetimeInput.value = localized;
     durationInput.value = existingEvent.duration || 60;
@@ -1346,7 +1967,7 @@ function openEventModal({ start, event: existingEvent = null, occurrenceStart = 
     modal.dataset.mode = 'edit';
     modal.dataset.eventId = existingEvent.id;
   } else {
-    modalTitle.textContent = 'Nouvel évènement';
+    modalTitle.textContent = t('calendar.eventModal.createTitle');
     titleInput.value = '';
     datetimeInput.value = localized;
     durationInput.value = 60;
@@ -1410,7 +2031,7 @@ function openEventModal({ start, event: existingEvent = null, occurrenceStart = 
     if (modal.dataset.mode === 'edit' && modal.dataset.eventId) {
       const targetEvent = appData.calendar.events.find((evt) => evt.id === modal.dataset.eventId);
       if (targetEvent) {
-        targetEvent.title = title || 'Nouvel évènement';
+        targetEvent.title = title || t('calendar.newEventTitle');
         targetEvent.start = datetimeValue;
         targetEvent.duration = duration;
         targetEvent.recurrence = recurrence;
@@ -1420,7 +2041,7 @@ function openEventModal({ start, event: existingEvent = null, occurrenceStart = 
     } else {
       const newEvent = {
         id: uid(),
-        title: title || 'Nouvel évènement',
+        title: title || t('calendar.newEventTitle'),
         start: datetimeValue,
         duration,
         recurrence,
@@ -1494,12 +2115,15 @@ function getActiveMindmap() {
   let mutated = false;
   if (!appData.mindmap || !Array.isArray(appData.mindmap.maps)) {
     const fallbackId = uid();
-    appData.mindmap = { maps: [{ id: fallbackId, name: 'Carte 1', nodes: [], links: [] }], activeMapId: fallbackId };
+    appData.mindmap = {
+      maps: [{ id: fallbackId, name: t('mindmap.defaultMapName', { index: 1 }), nodes: [], links: [] }],
+      activeMapId: fallbackId
+    };
     mutated = true;
   }
   if (appData.mindmap.maps.length === 0) {
     const fallbackId = uid();
-    appData.mindmap.maps.push({ id: fallbackId, name: 'Carte 1', nodes: [], links: [] });
+    appData.mindmap.maps.push({ id: fallbackId, name: t('mindmap.defaultMapName', { index: 1 }), nodes: [], links: [] });
     appData.mindmap.activeMapId = fallbackId;
     mutated = true;
   }
@@ -1534,7 +2158,7 @@ function renderMindmapList() {
     const item = document.createElement('li');
     item.classList.toggle('active', map.id === active.id);
     const nameSpan = document.createElement('span');
-    nameSpan.textContent = map.name || 'Carte sans nom';
+    nameSpan.textContent = map.name || t('mindmap.untitledMap');
     item.appendChild(nameSpan);
     item.addEventListener('click', () => {
       if (appData.mindmap.activeMapId === map.id) return;
@@ -1558,7 +2182,7 @@ function initMindmap() {
     const rect = canvas.getBoundingClientRect();
     const node = {
       id: uid(),
-      title: 'Nouvelle bulle',
+      title: t('mindmap.newBubble'),
       color: colorInput.value,
       x: rect.width / 2 - 60,
       y: rect.height / 2 - 40
@@ -1602,7 +2226,7 @@ function initMindmap() {
     addMapBtn.addEventListener('click', () => {
       const newMap = {
         id: uid(),
-        name: `Carte ${appData.mindmap.maps.length + 1}`,
+        name: t('mindmap.defaultMapName', { index: appData.mindmap.maps.length + 1 }),
         nodes: [],
         links: []
       };
@@ -1614,10 +2238,10 @@ function initMindmap() {
   if (renameMapBtn) {
     renameMapBtn.addEventListener('click', () => {
       const map = getActiveMindmap();
-      const newName = prompt('Nom de la carte', map.name || 'Carte sans nom');
+      const newName = prompt(t('mindmap.renamePrompt'), map.name || t('mindmap.untitledMap'));
       if (newName === null) return;
       const trimmed = newName.trim();
-      map.name = trimmed || 'Carte sans nom';
+      map.name = trimmed || t('mindmap.untitledMap');
       saveData();
       renderMindmapList();
     });
@@ -1626,11 +2250,11 @@ function initMindmap() {
   if (deleteMapBtn) {
     deleteMapBtn.addEventListener('click', () => {
       if (appData.mindmap.maps.length <= 1) {
-        alert('Impossible de supprimer la dernière carte.');
+        alert(t('mindmap.lastMapAlert'));
         return;
       }
       const map = getActiveMindmap();
-      if (!confirm(`Supprimer la carte "${map.name}" ?`)) return;
+      if (!confirm(t('mindmap.deleteConfirm', { name: map.name || t('mindmap.untitledMap') }))) return;
       appData.mindmap.maps = appData.mindmap.maps.filter((m) => m.id !== map.id);
       const fallback = getActiveMindmap();
       appData.mindmap.activeMapId = fallback.id;
@@ -1764,7 +2388,8 @@ function editNodeTitle(node) {
   input.focus();
   input.select();
   input.addEventListener('blur', () => {
-    node.title = input.value.trim() || 'Sans titre';
+    const trimmed = input.value.trim();
+    node.title = trimmed || t('mindmap.untitledNode');
     saveData();
     renderMindmap();
   });
@@ -1869,7 +2494,7 @@ function syncLinkButton() {
   const btn = document.getElementById('link-nodes');
   if (!btn) return;
   btn.classList.toggle('active', linkMode);
-  btn.textContent = linkMode ? 'Relier (choisir la cible)' : 'Relier';
+  btn.textContent = linkMode ? t('mindmap.linkNodesActive') : t('mindmap.linkNodes');
 }
 
 function setLinkMode(active) {
@@ -1907,7 +2532,7 @@ function renderGanttList() {
   if (!appData.gantt || appData.gantt.charts.length === 0) {
     const empty = document.createElement('li');
     empty.className = 'empty-state';
-    empty.textContent = 'Créez un schéma GANTT pour commencer.';
+    empty.textContent = t('gantt.listEmpty');
     list.appendChild(empty);
     return;
   }
@@ -1918,7 +2543,7 @@ function renderGanttList() {
     if (chart.id === appData.gantt.activeChartId) {
       item.classList.add('active');
     }
-    item.textContent = chart.name || 'Schéma sans nom';
+    item.textContent = chart.name || t('gantt.chartUntitled');
     item.addEventListener('click', () => {
       appData.gantt.activeChartId = chart.id;
       saveData();
@@ -1938,7 +2563,7 @@ function renderGanttBoard() {
 
   const chart = getActiveGanttChart();
   if (!chart) {
-    nameEl.textContent = 'Créez un schéma GANTT pour commencer';
+    nameEl.textContent = t('gantt.headerTitle');
     addTaskBtn.disabled = true;
     emptyEl.hidden = false;
     boardEl.hidden = true;
@@ -1947,7 +2572,7 @@ function renderGanttBoard() {
     return;
   }
 
-  nameEl.textContent = chart.name || 'Schéma sans nom';
+  nameEl.textContent = chart.name || t('gantt.chartUntitled');
   addTaskBtn.disabled = false;
   emptyEl.hidden = true;
   boardEl.hidden = false;
@@ -1956,7 +2581,7 @@ function renderGanttBoard() {
   if (chart.tasks.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'Ajoutez une tâche pour construire votre planning.';
+    empty.textContent = t('gantt.boardEmpty');
     rowsContainer.appendChild(empty);
   } else {
     chart.tasks.forEach((task) => {
@@ -2021,7 +2646,7 @@ function renderGanttBoard() {
       deleteBtn.type = 'button';
       deleteBtn.textContent = '✕';
       deleteBtn.addEventListener('click', () => {
-        if (!confirm("Supprimer cette tâche du planning ?")) return;
+        if (!confirm(t('gantt.deleteTaskConfirm'))) return;
         chart.tasks = chart.tasks.filter((t) => t.id !== task.id);
         saveData();
         renderGantt();
@@ -2048,7 +2673,7 @@ function renderGanttTimeline(chart) {
   if (!chart || chart.tasks.length === 0) {
     const placeholder = document.createElement('div');
     placeholder.className = 'gantt-timeline-placeholder';
-    placeholder.textContent = 'Ajoutez des tâches avec des dates pour afficher le diagramme.';
+    placeholder.textContent = t('gantt.timelinePlaceholder');
     timeline.appendChild(placeholder);
     return;
   }
@@ -2084,7 +2709,7 @@ function renderGanttTimeline(chart) {
     const day = new Date(startBoundary);
     day.setDate(day.getDate() + dayIndex);
     const label = document.createElement('span');
-    label.textContent = day.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    label.textContent = day.toLocaleDateString(getCurrentLocale(), { day: '2-digit', month: 'short' });
     header.appendChild(label);
   }
   timeline.appendChild(header);
@@ -2129,7 +2754,7 @@ function renderGanttTimeline(chart) {
     const label = document.createElement('span');
     label.className = 'gantt-bar-label';
     const progressLabel = Number.isFinite(progress) ? ` (${Math.round(progress)}%)` : '';
-    label.textContent = `${task.name || 'Tâche'}${progressLabel}`;
+    label.textContent = `${task.name || t('gantt.barFallback')}${progressLabel}`;
     bar.appendChild(label);
 
     bars.appendChild(bar);
@@ -2149,8 +2774,8 @@ function initGantt() {
 
   if (addChartBtn) {
     addChartBtn.addEventListener('click', () => {
-      const defaultName = `Schéma ${appData.gantt.charts.length + 1}`;
-      const name = prompt('Nom du nouveau schéma GANTT', defaultName);
+      const defaultName = t('gantt.defaultChartName', { index: appData.gantt.charts.length + 1 });
+      const name = prompt(t('gantt.newChartPrompt'), defaultName);
       const trimmed = name ? name.trim() : '';
       const chart = {
         id: uid(),
@@ -2168,15 +2793,15 @@ function initGantt() {
     renameChartBtn.addEventListener('click', () => {
       const chart = getActiveGanttChart();
       if (!chart) {
-        alert('Créez un schéma avant de le renommer.');
+        alert(t('gantt.renameChartAlert'));
         return;
       }
-      const name = prompt('Nouveau nom du schéma', chart.name || 'Schéma sans nom');
+      const name = prompt(t('gantt.renameChartPrompt'), chart.name || t('gantt.chartUntitled'));
       if (name === null) {
         return;
       }
       const trimmed = name.trim();
-      chart.name = trimmed || chart.name || 'Schéma sans nom';
+      chart.name = trimmed || chart.name || t('gantt.chartUntitled');
       saveData();
       renderGantt();
     });
@@ -2186,10 +2811,10 @@ function initGantt() {
     deleteChartBtn.addEventListener('click', () => {
       const chart = getActiveGanttChart();
       if (!chart) {
-        alert('Aucun schéma à supprimer.');
+        alert(t('gantt.noChartToDelete'));
         return;
       }
-      if (!confirm("Supprimer ce schéma GANTT et toutes ses tâches ?")) return;
+      if (!confirm(t('gantt.deleteChartConfirm'))) return;
       appData.gantt.charts = appData.gantt.charts.filter((item) => item.id !== chart.id);
       if (appData.gantt.charts.length === 0) {
         appData.gantt.activeChartId = null;
@@ -2205,7 +2830,7 @@ function initGantt() {
     addTaskBtn.addEventListener('click', () => {
       const chart = getActiveGanttChart();
       if (!chart) {
-        alert('Créez un schéma avant d’ajouter des tâches.');
+        alert(t('gantt.addTaskAlert'));
         return;
       }
       const start = new Date();
@@ -2214,7 +2839,7 @@ function initGantt() {
       end.setDate(end.getDate() + 1);
       const task = {
         id: uid(),
-        name: `Nouvelle tâche ${chart.tasks.length + 1}`,
+        name: t('gantt.newTaskName', { index: chart.tasks.length + 1 }),
         start: toISODateString(start),
         end: toISODateString(end),
         progress: 0
@@ -2232,7 +2857,7 @@ function initTodo() {
   document.getElementById('add-block').addEventListener('click', () => {
     const block = {
       id: uid(),
-      title: 'Nouveau bloc',
+      title: t('todo.newBlock'),
       items: []
     };
     appData.todo.blocks.push(block);
@@ -2249,7 +2874,7 @@ function renderTodo() {
   if (appData.todo.blocks.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'Ajoutez un bloc pour commencer votre liste de tâches.';
+    empty.textContent = t('todo.empty');
     container.appendChild(empty);
     return;
   }
@@ -2268,9 +2893,9 @@ function renderTodo() {
     });
 
     const deleteBtn = document.createElement('button');
-    deleteBtn.textContent = 'Supprimer';
+    deleteBtn.textContent = t('todo.deleteBlock');
     deleteBtn.addEventListener('click', () => {
-      if (!confirm('Supprimer ce bloc et toutes ses tâches ?')) return;
+      if (!confirm(t('todo.deleteBlockConfirm'))) return;
       appData.todo.blocks = appData.todo.blocks.filter((b) => b.id !== block.id);
       saveData();
       renderTodo();
@@ -2288,11 +2913,11 @@ function renderTodo() {
     });
 
     const addItemBtn = document.createElement('button');
-    addItemBtn.textContent = 'Ajouter une tâche';
+    addItemBtn.textContent = t('todo.addTask');
     addItemBtn.addEventListener('click', () => {
       const newItem = {
         id: uid(),
-        text: 'Nouvelle tâche',
+        text: t('todo.newTask'),
         done: false
       };
       block.items.push(newItem);
@@ -2352,6 +2977,7 @@ function createTodoItemElement(block, item) {
 async function bootstrap() {
   await initData();
   initTabs();
+  initLocalization();
   initVersionIndicator();
   initStorageControls();
   initCalendar();
