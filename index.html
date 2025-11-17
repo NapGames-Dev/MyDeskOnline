@@ -3,39 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyDesk Online - By Nap</title>
+  <title data-i18n="app.title">MyDesk Online - By Nap</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="app-header">
     <div class="app-header__title-row">
-      <a href="https://github.com/NapGames-Dev/MyDeskOnline/tree/main"><button id="version-indicator" class="version-indicator" type="button" aria-live="polite">Vérification...</button></a>
-      <h1>MyDesk Online - By Nap</h1>
+      <div class="language-switcher">
+        <label for="language-select" data-i18n="language.label">Langue</label>
+        <select id="language-select" data-i18n-aria-label="language.selectAria">
+          <option value="fr" data-i18n="language.french">Français</option>
+          <option value="en" data-i18n="language.english">Anglais</option>
+          <option value="vi" data-i18n="language.vietnamese">Vietnamien</option>
+        </select>
+      </div>
+      <a href="https://github.com/NapGames-Dev/MyDeskOnline/tree/main"><button id="version-indicator" class="version-indicator" type="button" aria-live="polite" data-i18n="version.checking">Vérification...</button></a>
+      <h1 data-i18n="app.title">MyDesk Online - By Nap</h1>
     </div>
     <nav class="tab-bar">
-      <button class="tab-link active" data-target="home">Accueil</button>
-      <button class="tab-link" data-target="calendar">Agenda</button>
-      <button class="tab-link" data-target="mindmap">Cartes mentales</button>
-      <button class="tab-link" data-target="todo">To Do List</button>
-      <button class="tab-link" data-target="gantt">GANTT</button>      
-      <button class="tab-link" data-target="trackirigo">Track'Irigo</button>
+      <button class="tab-link active" data-target="home" data-i18n="tabs.home">Accueil</button>
+      <button class="tab-link" data-target="calendar" data-i18n="tabs.calendar">Agenda</button>
+      <button class="tab-link" data-target="mindmap" data-i18n="tabs.mindmap">Cartes mentales</button>
+      <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
+      <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
+      <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
     </nav>
   </header>
 
   <main>
     <section id="home" class="tab-panel active">
-      <h2>Configuration et sauvegarde</h2>
-      <p>
+      <h2 data-i18n="home.heading">Configuration et sauvegarde</h2>
+      <p data-i18n="home.description">
         Sélectionnez un dossier local pour enregistrer vos données ou indiquez un chemin manuel.
         Les données sont également conservées dans votre navigateur pour un accès rapide.
       </p>
       <div class="storage-controls">
-        <label for="storage-path">Chemin de sauvegarde</label>
-        <input type="text" id="storage-path" placeholder="/chemin/vers/mon/dossier">
+        <label for="storage-path" data-i18n="home.storagePathLabel">Chemin de sauvegarde</label>
+        <input type="text" id="storage-path" placeholder="/chemin/vers/mon/dossier" data-i18n-placeholder="home.storagePathPlaceholder">
         <div class="storage-buttons">
-          <button id="choose-folder">Choisir un dossier</button>
-          <button id="export-json">Exporter les données (JSON)</button>
-          <button id="import-json">Importer un fichier JSON</button>
+          <button id="choose-folder" data-i18n="home.chooseFolder">Choisir un dossier</button>
+          <button id="export-json" data-i18n="home.exportJson">Exporter les données (JSON)</button>
+          <button id="import-json" data-i18n="home.importJson">Importer un fichier JSON</button>
         </div>
         <input type="file" id="import-input" accept="application/json" hidden>
         <p class="storage-status" id="storage-status"></p>
@@ -45,30 +53,30 @@
     <section id="calendar" class="tab-panel">
       <div class="calendar-header">
         <div class="week-navigation">
-          <button id="prev-week" aria-label="Semaine précédente">◀</button>
+          <button id="prev-week" aria-label="Semaine précédente" data-i18n-aria-label="calendar.prevWeekLabel">◀</button>
           <div class="week-label" id="week-label"></div>
-          <button id="next-week" aria-label="Semaine suivante">▶</button>
+          <button id="next-week" aria-label="Semaine suivante" data-i18n-aria-label="calendar.nextWeekLabel">▶</button>
         </div>
         <div class="calendar-actions">
-          <button id="today-button">Aujourd'hui</button>
-          <span class="hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
+          <button id="today-button" data-i18n="calendar.today">Aujourd'hui</button>
+          <span class="hint" data-i18n="calendar.hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
         </div>
       </div>
       <div class="calendar-content">
         <div class="calendar-grid" id="calendar-grid"></div>
         <aside class="event-types-panel">
-          <h3>Types d'évènements</h3>
+          <h3 data-i18n="calendar.eventTypesTitle">Types d'évènements</h3>
           <div class="event-type-list" id="event-type-list"></div>
           <form class="event-type-form" id="event-type-form">
             <label>
-              Nom du type
-              <input type="text" id="event-type-name" placeholder="Nom du type" required>
+              <span data-i18n="calendar.eventTypeNameLabel">Nom du type</span>
+              <input type="text" id="event-type-name" placeholder="Nom du type" required data-i18n-placeholder="calendar.eventTypeNamePlaceholder">
             </label>
             <label>
-              Couleur
+              <span data-i18n="calendar.eventTypeColorLabel">Couleur</span>
               <input type="color" id="event-type-color" value="#3b82f6">
             </label>
-            <button type="submit">Ajouter un type</button>
+            <button type="submit" data-i18n="calendar.eventTypeAdd">Ajouter un type</button>
           </form>
         </aside>
       </div>
@@ -76,11 +84,11 @@
 
     <section id="mindmap" class="tab-panel">
       <div class="mindmap-toolbar">
-        <button id="add-node">Ajouter une bulle</button>
-        <button id="delete-node">Supprimer</button>
-        <button id="link-nodes">Relier</button>
+        <button id="add-node" data-i18n="mindmap.addNode">Ajouter une bulle</button>
+        <button id="delete-node" data-i18n="mindmap.deleteNode">Supprimer</button>
+        <button id="link-nodes" data-i18n="mindmap.linkNodes">Relier</button>
         <label class="color-picker">
-          Couleur
+          <span data-i18n="mindmap.colorLabel">Couleur</span>
           <input type="color" id="node-color" value="#4e73df">
         </label>
       </div>
@@ -90,21 +98,21 @@
           <div class="mindmap-canvas" id="mindmap-canvas"></div>
         </div>
         <aside class="mindmap-sidebar">
-          <h3>Cartes mentales</h3>
+          <h3 data-i18n="mindmap.title">Cartes mentales</h3>
           <ul class="mindmap-list" id="mindmap-list"></ul>
           <div class="mindmap-actions">
-            <button id="add-map">Nouvelle carte</button>
-            <button id="rename-map">Renommer</button>
-            <button id="delete-map">Supprimer la carte</button>
+            <button id="add-map" data-i18n="mindmap.addMap">Nouvelle carte</button>
+            <button id="rename-map" data-i18n="mindmap.renameMap">Renommer</button>
+            <button id="delete-map" data-i18n="mindmap.deleteMap">Supprimer la carte</button>
           </div>
         </aside>
       </div>
-      <p class="hint">Astuce : faites glisser les bulles pour les déplacer, double-cliquez pour renommer.</p>
+      <p class="hint" data-i18n="mindmap.hint">Astuce : faites glisser les bulles pour les déplacer, double-cliquez pour renommer.</p>
     </section>
 
     <section id="todo" class="tab-panel">
       <div class="todo-header">
-        <button id="add-block">Ajouter un bloc</button>
+        <button id="add-block" data-i18n="todo.addBlock">Ajouter un bloc</button>
       </div>
       <div class="todo-blocks" id="todo-blocks"></div>
     </section>
@@ -112,31 +120,31 @@
     <section id="gantt" class="tab-panel">
       <div class="gantt-layout">
         <aside class="gantt-sidebar">
-          <h3>Schémas GANTT</h3>
+          <h3 data-i18n="gantt.sidebarTitle">Schémas GANTT</h3>
           <ul class="gantt-chart-list" id="gantt-chart-list"></ul>
           <div class="gantt-actions">
-            <button id="gantt-add-chart">Nouveau schéma</button>
-            <button id="gantt-rename-chart">Renommer</button>
-            <button id="gantt-delete-chart">Supprimer</button>
+            <button id="gantt-add-chart" data-i18n="gantt.addChart">Nouveau schéma</button>
+            <button id="gantt-rename-chart" data-i18n="gantt.renameChart">Renommer</button>
+            <button id="gantt-delete-chart" data-i18n="gantt.deleteChart">Supprimer</button>
           </div>
         </aside>
         <div class="gantt-main">
           <div class="gantt-header">
             <div>
-              <h3 id="gantt-active-name">Créez un schéma GANTT pour commencer</h3>
-              <p class="hint">Ajoutez des tâches avec leurs dates de début et de fin pour visualiser votre planning.</p>
+              <h3 id="gantt-active-name" data-i18n="gantt.headerTitle">Créez un schéma GANTT pour commencer</h3>
+              <p class="hint" data-i18n="gantt.headerHint">Ajoutez des tâches avec leurs dates de début et de fin pour visualiser votre planning.</p>
             </div>
-            <button id="gantt-add-task" disabled>Ajouter une tâche</button>
+            <button id="gantt-add-task" disabled data-i18n="gantt.addTask">Ajouter une tâche</button>
           </div>
           <div class="gantt-content" id="gantt-content">
-            <div class="gantt-empty" id="gantt-empty">Aucun schéma sélectionné.</div>
+            <div class="gantt-empty" id="gantt-empty" data-i18n="gantt.emptySelection">Aucun schéma sélectionné.</div>
             <div class="gantt-board" id="gantt-board" hidden>
               <div class="gantt-task-list">
                 <div class="gantt-task-row gantt-task-header">
-                  <span>Tâche</span>
-                  <span>Début</span>
-                  <span>Fin</span>
-                  <span>Progression</span>
+                  <span data-i18n="gantt.table.task">Tâche</span>
+                  <span data-i18n="gantt.table.start">Début</span>
+                  <span data-i18n="gantt.table.end">Fin</span>
+                  <span data-i18n="gantt.table.progress">Progression</span>
                   <span></span>
                 </div>
                 <div id="gantt-task-rows"></div>
@@ -152,6 +160,7 @@
         <iframe
           src="https://yabrich.github.io"
           title="Track'Irigo – Carte Irigo"
+          data-i18n-title="track.iframeTitle"
           loading="lazy"
           allow="geolocation"
         ></iframe>
@@ -161,43 +170,43 @@
 
   <div class="modal" id="event-modal" hidden>
     <div class="modal-content">
-      <h3>Nouvel évènement</h3>
+      <h3 data-i18n="calendar.eventModal.createTitle">Nouvel évènement</h3>
       <form id="event-form">
         <label>
-          Titre
+          <span data-i18n="calendar.eventModal.titleLabel">Titre</span>
           <input type="text" id="event-title" required>
         </label>
         <label>
-          Date et heure
+          <span data-i18n="calendar.eventModal.datetimeLabel">Date et heure</span>
           <input type="datetime-local" id="event-datetime" required>
         </label>
         <label>
-          Durée (minutes)
+          <span data-i18n="calendar.eventModal.durationLabel">Durée (minutes)</span>
           <input type="number" id="event-duration" min="15" step="15" value="60">
         </label>
         <label>
-          Type d'évènement
+          <span data-i18n="calendar.eventModal.typeLabel">Type d'évènement</span>
           <select id="event-type">
-            <option value="">Aucun</option>
+            <option value="" data-i18n="calendar.eventModal.typeNone">Aucun</option>
           </select>
         </label>
         <label>
-          Couleur
+          <span data-i18n="calendar.eventModal.colorLabel">Couleur</span>
           <input type="color" id="event-color" value="#10b981">
         </label>
         <label>
-          Répétition
+          <span data-i18n="calendar.eventModal.recurrenceLabel">Répétition</span>
           <select id="event-recurrence">
-            <option value="none">Aucune</option>
-            <option value="daily">Quotidienne</option>
-            <option value="weekly">Hebdomadaire</option>
-            <option value="monthly">Mensuelle</option>
-            <option value="yearly">Annuelle</option>
+            <option value="none" data-i18n="calendar.eventModal.recurrence.none">Aucune</option>
+            <option value="daily" data-i18n="calendar.eventModal.recurrence.daily">Quotidienne</option>
+            <option value="weekly" data-i18n="calendar.eventModal.recurrence.weekly">Hebdomadaire</option>
+            <option value="monthly" data-i18n="calendar.eventModal.recurrence.monthly">Mensuelle</option>
+            <option value="yearly" data-i18n="calendar.eventModal.recurrence.yearly">Annuelle</option>
           </select>
         </label>
         <div class="modal-actions">
-          <button type="submit">Enregistrer</button>
-          <button type="button" id="cancel-event">Annuler</button>
+          <button type="submit" data-i18n="calendar.eventModal.save">Enregistrer</button>
+          <button type="button" id="cancel-event" data-i18n="calendar.eventModal.cancel">Annuler</button>
         </div>
       </form>
     </div>
