@@ -17,6 +17,11 @@ const defaultData = {
   gantt: {
     charts: [],
     activeChartId: null
+  },
+  alcuin: {
+    lastFetchDate: null, // string "YYYY-MM-DD" ou null
+    login: '',
+    password: ''
   }
 };
 
@@ -32,7 +37,7 @@ const GANTT_DAY_WIDTH = 64;
 const VERSION_INDICATOR_ID = 'version-indicator';
 const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json';
 const LOCAL_VERSION_INFO = {
-  version: '1.2.0',
+  version: '1.3.0',
   versionCheckUrl: 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json'
 };
 const VERSION_INDICATOR_STATES = {
@@ -67,7 +72,8 @@ const translations = {
       mindmap: 'Cartes mentales',
       todo: 'To Do List',
       gantt: 'GANTT',
-      track: "Track'Irigo"
+      track: "Track'Irigo",
+      esaip: 'ESAIP'
     },
     home: {
       heading: 'Configuration et sauvegarde',
@@ -98,6 +104,7 @@ const translations = {
       error: 'Vérification impossible'
     },
     calendar: {
+      esaipToggleLabel: 'Afficher les cours ESAIP',
       today: "Aujourd'hui",
       hint: 'Astuce : utilisez les flèches du clavier pour naviguer de semaine.',
       eventTypesTitle: "Types d'évènements",
@@ -202,6 +209,20 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Carte Irigo"
+    },
+    esaip: {
+      heading: 'Connexion ESAIP / Alcuin',
+      description: 'Entrez vos identifiants ESAIP. Ils sont stockés uniquement en local. Le scraper Node utilise aussi credentials.txt.',
+      loginLabel: 'Identifiant',
+      passwordLabel: 'Mot de passe',
+      saveButton: 'Enregistrer les identifiants',
+      syncButton: "Recharger l'emploi du temps depuis timetable.json",
+      saved: 'Identifiants ESAIP enregistrés.',
+      saveError: "Impossible d\'enregistrer les identifiants.",
+      readError: "Impossible de lire timetable.json.",
+      importSuccess: 'Cours ESAIP importés dans l’agenda.',
+      hint: 'Pour mettre à jour les cours : lancez "scraper.exe" dans le dossier de sauvegarde, puis cliquez sur "Recharger l\'emploi du temps".',
+      lastFetchPrefix: 'Dernière importation : '
     }
   },
   en: {
@@ -219,7 +240,8 @@ const translations = {
       mindmap: 'Mind Maps',
       todo: 'To-Do List',
       gantt: 'GANTT',
-      track: "Track'Irigo"
+      track: "Track'Irigo",
+      esaip: 'ESAIP'
     },
     home: {
       heading: 'Configuration and backup',
@@ -371,7 +393,8 @@ const translations = {
       mindmap: 'Sơ đồ tư duy',
       todo: 'Danh sách công việc',
       gantt: 'GANTT',
-      track: "Track'Irigo"
+      track: "Track'Irigo",
+      esaip: 'ESAIP'
     },
     home: {
       heading: 'Thiết lập và sao lưu',
@@ -892,8 +915,22 @@ function saveData() {
 }
 
 function migrateData() {
-  if (!appData.calendar || typeof appData.calendar !== 'object') {
-    appData.calendar = cloneDefault().calendar;
+  if (!appData.alcuin || typeof appData.alcuin !== 'object') {
+    appData.alcuin = {
+      lastFetchDate: null,
+      login: '',
+      password: ''
+    };
+  } else {
+    if (typeof appData.alcuin.lastFetchDate === 'undefined') {
+      appData.alcuin.lastFetchDate = null;
+    }
+    if (typeof appData.alcuin.login !== 'string') {
+      appData.alcuin.login = '';
+    }
+    if (typeof appData.alcuin.password !== 'string') {
+      appData.alcuin.password = '';
+    }
   }
   if (!Array.isArray(appData.calendar.events)) {
     appData.calendar.events = [];
@@ -1091,6 +1128,12 @@ function migrateData() {
   } else if (!appData.gantt.activeChartId || !appData.gantt.charts.some((chart) => chart.id === appData.gantt.activeChartId)) {
     appData.gantt.activeChartId = appData.gantt.charts[0].id;
   }
+
+  if (!appData.alcuin || typeof appData.alcuin !== 'object') {
+    appData.alcuin = {
+      lastFetchDate: null
+    };
+  }
 }
 
 function updateStorageStatus(messageKey, type = 'info', variables = {}) {
@@ -1152,6 +1195,10 @@ function initTabs() {
       requestAnimationFrame(() => {
         renderGantt();
       });
+    } else if (link.dataset.target === 'esaip') {
+      // On pourrait éventuellement rafraîchir la date d’import ou le statut
+      updateEsaipLastFetchLabel();
+      updateEsaipToggleVisibility();
     }
   };
   links.forEach((link) => {
@@ -1374,6 +1421,137 @@ function initStorageControls() {
       updateStorageStatus('storage.importInvalid', 'error');
     }
     importInput.value = '';
+  });
+}
+
+async function writeCredentialsFileIfPossible() {
+  // On écrit credentials.txt dans le dossier choisi (si présent)
+  if (!folderHandle) return;
+
+  try {
+    const granted = await ensurePermission(folderHandle);
+    if (!granted) return;
+
+    const fileHandle = await folderHandle.getFileHandle('credentials.txt', { create: true });
+    const writable = await fileHandle.createWritable();
+    const content = `${appData.alcuin.login || ''}\n${appData.alcuin.password || ''}\n`;
+    await writable.write(content);
+    await writable.close();
+  } catch (error) {
+    console.error('Erreur écriture credentials.txt', error);
+    // On ne casse pas l’UI pour autant
+  }
+}
+
+function updateEsaipStatus(messageKey, type = 'info') {
+  const status = document.getElementById('esaip-status');
+  if (!status) return;
+  status.textContent = t(messageKey);
+  status.className = `storage-status ${type}`;
+}
+
+function updateEsaipLastFetchLabel() {
+  const label = document.getElementById('esaip-last-fetch');
+  if (!label) return;
+  if (appData.alcuin.lastFetchDate) {
+    label.textContent = t('esaip.lastFetchPrefix') + appData.alcuin.lastFetchDate;
+  } else {
+    label.textContent = '';
+  }
+}
+
+function updateEsaipToggleVisibility() {
+  const wrapper = document.getElementById('calendar-esaip-toggle-wrapper');
+  if (!wrapper) return;
+  const hasCreds = appData.alcuin &&
+    appData.alcuin.login &&
+    appData.alcuin.password;
+  wrapper.style.display = hasCreds ? '' : 'none';
+}
+
+async function loadEsaipTimetableFromDisk() {
+  if (!folderHandle) {
+    updateEsaipStatus('esaip.readError', 'error');
+    return [];
+  }
+  try {
+    const granted = await ensurePermission(folderHandle);
+    if (!granted) {
+      updateEsaipStatus('storage.permissionDenied', 'error');
+      return [];
+    }
+    const fileHandle = await folderHandle.getFileHandle('timetable.json');
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    const json = JSON.parse(text);
+    const events = json &&
+      json.calendar &&
+      Array.isArray(json.calendar.events)
+      ? json.calendar.events
+      : [];
+    // On taggue les évènements comme venant d'ESAIP
+    return events.map(ev => ({ ...ev, source: 'esaip' }));
+  } catch (error) {
+    console.error('Erreur lecture timetable.json', error);
+    updateEsaipStatus('esaip.readError', 'error');
+    return [];
+  }
+}
+
+async function importEsaipEvents() {
+  // Supprimer les anciens évènements ESAIP
+  appData.calendar.events = appData.calendar.events.filter(ev => ev.source !== 'esaip');
+
+  const esaipEvents = await loadEsaipTimetableFromDisk();
+  if (esaipEvents.length === 0) {
+    saveData();
+    renderCalendar();
+    return;
+  }
+
+  appData.calendar.events.push(...esaipEvents);
+
+  appData.alcuin.lastFetchDate = toISODateString(new Date());
+  saveData();
+  updateEsaipStatus('esaip.importSuccess', 'success');
+  updateEsaipLastFetchLabel();
+  renderCalendar();
+}
+
+function initEsaip() {
+  const loginInput = document.getElementById('esaip-login');
+  const passwordInput = document.getElementById('esaip-password');
+  const toggleBtn = document.getElementById('esaip-toggle-password');
+  const saveBtn = document.getElementById('esaip-save-credentials');
+  const syncBtn = document.getElementById('esaip-sync-timetable');
+
+  if (!loginInput || !passwordInput || !toggleBtn || !saveBtn || !syncBtn) {
+    return;
+  }
+
+  // Remplir depuis appData
+  loginInput.value = appData.alcuin.login || '';
+  passwordInput.value = appData.alcuin.password || '';
+
+  updateEsaipLastFetchLabel();
+  updateEsaipToggleVisibility();
+
+  toggleBtn.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    appData.alcuin.login = loginInput.value.trim();
+    appData.alcuin.password = passwordInput.value;
+    saveData();
+    updateEsaipToggleVisibility();
+    await writeCredentialsFileIfPossible();
+    updateEsaipStatus('esaip.saved', 'success');
+  });
+
+  syncBtn.addEventListener('click', () => {
+    importEsaipEvents().catch(err => console.error(err));
   });
 }
 
@@ -1690,7 +1868,11 @@ function renderCalendarEvents() {
   calendarHourHeight = anyCell ? anyCell.getBoundingClientRect().height : 48;
 
   // 3) Calculer les occurrences de la semaine
+  const esaipToggle = document.getElementById('calendar-esaip-toggle');
+  const showEsaip = !esaipToggle || esaipToggle.checked;
+
   const weekEvents = appData.calendar.events
+    .filter(ev => showEsaip || ev.source !== 'esaip')
     .flatMap((event) => getOccurrencesForWeek(event))
     .sort((a, b) => a.start - b.start);
 
@@ -2109,6 +2291,14 @@ function initCalendar() {
       renderCalendar();
     }
   });
+  const esaipToggle = document.getElementById('calendar-esaip-toggle');
+  if (esaipToggle) {
+    esaipToggle.addEventListener('change', () => {
+      renderCalendar();
+    });
+  }
+  // On met à jour la visibilité en fonction des identifiants
+  updateEsaipToggleVisibility();
 }
 
 function getActiveMindmap() {
@@ -2984,6 +3174,7 @@ async function bootstrap() {
   initMindmap();
   initGantt();
   initTodo();
+  initEsaip();
 }
 
 if (document.readyState === 'loading') {
