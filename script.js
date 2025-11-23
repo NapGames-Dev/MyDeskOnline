@@ -212,16 +212,23 @@ const translations = {
     },
     esaip: {
       heading: 'Connexion ESAIP / Alcuin',
-      description: 'Entrez vos identifiants ESAIP. Ils sont stockés uniquement en local. Le scraper Node utilise aussi credentials.txt.',
+      description: 'Entrez vos identifiants ESAIP. Ils sont stockés uniquement en local. Le scraper intégré utilise aussi credentials.txt.',
       loginLabel: 'Identifiant',
       passwordLabel: 'Mot de passe',
       saveButton: 'Enregistrer les identifiants',
       syncButton: "Recharger l'emploi du temps depuis timetable.json",
+      fetchButton: 'Récupérer les données depuis Alcuin',
       saved: 'Identifiants ESAIP enregistrés.',
       saveError: "Impossible d\'enregistrer les identifiants.",
       readError: "Impossible de lire timetable.json.",
+      scraping: 'Récupération des cours depuis Alcuin... ',
+      scrapeSuccess: 'Données Alcuin récupérées et sauvegardées.',
+      scrapeError: 'Impossible de récupérer les données Alcuin.',
+      credentialsMissing: 'Identifiants ESAIP manquants.',
+      noFolder: 'Sélectionnez un dossier de sauvegarde pour enregistrer timetable.json.',
+      scraperUnavailable: 'Le module de récupération est indisponible.',
       importSuccess: 'Cours ESAIP importés dans l’agenda.',
-      hint: 'Pour mettre à jour les cours : lancez "scraper.exe" dans le dossier de sauvegarde, puis cliquez sur "Recharger l\'emploi du temps".',
+      hint: 'Utilisez « Récupérer les données » pour lancer le scraping puis « Recharger l\'emploi du temps » pour mettre l\'agenda à jour.',
       lastFetchPrefix: 'Dernière importation : '
     }
   },
@@ -376,6 +383,27 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Irigo map"
+    },
+    esaip: {
+      heading: 'ESAIP / Alcuin login',
+      description: 'Enter your ESAIP credentials. They are stored locally. The built-in scraper also uses credentials.txt.',
+      loginLabel: 'Login',
+      passwordLabel: 'Password',
+      saveButton: 'Save credentials',
+      syncButton: 'Reload timetable from timetable.json',
+      fetchButton: 'Fetch data from Alcuin',
+      saved: 'ESAIP credentials saved.',
+      saveError: 'Unable to save credentials.',
+      readError: 'Unable to read timetable.json.',
+      scraping: 'Fetching courses from Alcuin... ',
+      scrapeSuccess: 'Alcuin data fetched and saved.',
+      scrapeError: 'Unable to fetch Alcuin data.',
+      credentialsMissing: 'ESAIP credentials are missing.',
+      noFolder: 'Select a storage folder to save timetable.json.',
+      scraperUnavailable: 'Scraper module unavailable.',
+      importSuccess: 'ESAIP courses imported into the calendar.',
+      hint: 'Use “Fetch data” to launch scraping then “Reload timetable” to refresh the calendar.',
+      lastFetchPrefix: 'Last import: '
     }
   },
   vi: {
@@ -529,6 +557,27 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Bản đồ Irigo"
+    },
+    esaip: {
+      heading: 'Đăng nhập ESAIP / Alcuin',
+      description: 'Nhập thông tin ESAIP của bạn. Chúng chỉ được lưu cục bộ. Scraper tích hợp cũng sử dụng credentials.txt.',
+      loginLabel: 'Tài khoản',
+      passwordLabel: 'Mật khẩu',
+      saveButton: 'Lưu thông tin',
+      syncButton: 'Tải lại thời khoá biểu từ timetable.json',
+      fetchButton: 'Lấy dữ liệu từ Alcuin',
+      saved: 'Thông tin ESAIP đã được lưu.',
+      saveError: 'Không thể lưu thông tin.',
+      readError: 'Không thể đọc timetable.json.',
+      scraping: 'Đang lấy các khoá học từ Alcuin...',
+      scrapeSuccess: 'Dữ liệu Alcuin đã được lấy và lưu.',
+      scrapeError: 'Không thể lấy dữ liệu Alcuin.',
+      credentialsMissing: 'Thiếu tài khoản hoặc mật khẩu ESAIP.',
+      noFolder: 'Hãy chọn thư mục lưu để ghi timetable.json.',
+      scraperUnavailable: 'Module lấy dữ liệu không khả dụng.',
+      importSuccess: 'Đã nhập khoá học ESAIP vào lịch.',
+      hint: 'Dùng “Lấy dữ liệu” để chạy scraper rồi “Tải lại thời khoá biểu” để làm mới lịch.',
+      lastFetchPrefix: 'Lần nhập cuối: '
     }
   }
 };
@@ -1524,8 +1573,9 @@ function initEsaip() {
   const toggleBtn = document.getElementById('esaip-toggle-password');
   const saveBtn = document.getElementById('esaip-save-credentials');
   const syncBtn = document.getElementById('esaip-sync-timetable');
+  const fetchBtn = document.getElementById('esaip-fetch-timetable');
 
-  if (!loginInput || !passwordInput || !toggleBtn || !saveBtn || !syncBtn) {
+  if (!loginInput || !passwordInput || !toggleBtn || !saveBtn || !syncBtn || !fetchBtn) {
     return;
   }
 
@@ -1552,6 +1602,45 @@ function initEsaip() {
 
   syncBtn.addEventListener('click', () => {
     importEsaipEvents().catch(err => console.error(err));
+  });
+
+  fetchBtn.addEventListener('click', async () => {
+    if (typeof window.runEsaipScraper !== 'function') {
+      updateEsaipStatus('esaip.scraperUnavailable', 'error');
+      return;
+    }
+
+    const login = loginInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!login || !password) {
+      updateEsaipStatus('esaip.credentialsMissing', 'error');
+      return;
+    }
+
+    if (!folderHandle) {
+      updateEsaipStatus('esaip.noFolder', 'error');
+      return;
+    }
+
+    appData.alcuin.login = login;
+    appData.alcuin.password = password;
+    saveData();
+    updateEsaipToggleVisibility();
+    await writeCredentialsFileIfPossible();
+
+    updateEsaipStatus('esaip.scraping', 'info');
+
+    try {
+      await window.runEsaipScraper({ login, password, folderHandle });
+      appData.alcuin.lastFetchDate = toISODateString(new Date());
+      updateEsaipStatus('esaip.scrapeSuccess', 'success');
+      updateEsaipLastFetchLabel();
+      await importEsaipEvents();
+    } catch (error) {
+      console.error(error);
+      updateEsaipStatus('esaip.scrapeError', 'error');
+    }
   });
 }
 
