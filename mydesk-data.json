@@ -1,0 +1,1423 @@
+{
+  "storagePath": "MyDeskOnline",
+  "calendar": {
+    "events": [
+      {
+        "id": "5405d9e2-b992-42bd-9d8b-73fb41f32773",
+        "title": "Anniversaire Yaël",
+        "start": "2025-12-04T00:00",
+        "duration": 60,
+        "recurrence": "yearly",
+        "color": "#10b981"
+      },
+      {
+        "id": "b2eedd80-e7cb-4c90-9240-e52205d488a0",
+        "title": "RDV Moïse",
+        "start": "2025-10-01T17:15",
+        "duration": 90,
+        "recurrence": "none",
+        "color": "#10b981",
+        "typeId": ""
+      },
+      {
+        "id": "bba27031-ccad-4644-8619-11b3532e5cd9",
+        "title": "EVENT",
+        "start": "2025-10-04T03:15",
+        "duration": 600,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "30e971d1-7c6e-44a3-8a1f-b38af67353d9",
+        "title": "Anniversaire Yaël",
+        "start": "2025-12-04T07:00",
+        "duration": 120,
+        "recurrence": "yearly",
+        "typeId": "03e4c959-b928-4a7c-a36c-4b9f0d907adf",
+        "color": "#a5e3fd"
+      },
+      {
+        "id": "7654298f-b0a4-4b7b-bd27-4e9691c84b15",
+        "title": "Pré requis",
+        "start": "2025-10-01T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "d5917091-2285-4175-925d-e6fe50be6efe",
+        "title": "Exos 1 et 2 Optique",
+        "start": "2025-10-04T11:00",
+        "duration": 135,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "76cc2b73-e158-4556-8f79-78850f4011e0",
+        "title": "Electrocinétique",
+        "start": "2025-10-08T10:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "c13a5a53-1d19-4360-ad28-91577f63db5d",
+        "title": "Rendre le DM Electrocinétique",
+        "start": "2025-10-21T17:00",
+        "duration": 180,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "dc0e7f53-599a-4586-bae8-f790d65a0587",
+        "title": "Crémaillère Diane",
+        "start": "2025-10-09T20:00",
+        "duration": 180,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#c73c00"
+      },
+      {
+        "id": "1f0eb489-f4db-4843-8482-1ec401ca5288",
+        "title": "Eval Economie",
+        "start": "2025-10-10T13:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "40c64ef5-671a-44b3-a34d-76c796025509",
+        "title": "Vacances !",
+        "start": "2025-10-24T16:30",
+        "duration": 390,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#007ab8"
+      },
+      {
+        "id": "df8b47a5-bf9a-4653-94e8-ac78f01c6db7",
+        "title": "Electro TD1",
+        "start": "2025-10-05T11:00",
+        "duration": 135,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "2ac0c924-4b57-40a3-8cba-ec5ee3631c72",
+        "title": "Electro TD2",
+        "start": "2025-10-06T18:15",
+        "duration": 105,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "193afc35-aec5-409a-822d-7dd3f540b90a",
+        "title": "Electro Exos Supplémentaires",
+        "start": "2025-10-07T17:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "fd6233fb-77f7-411c-b487-d2717018d2b5",
+        "title": "Présentation RSE",
+        "start": "2025-11-07T15:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "0d4e79d7-b2b3-4b41-b36c-76b8dfd00797",
+        "title": "Infos ESAIP Alternance",
+        "start": "2025-12-08T17:00",
+        "duration": 150,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#24ae80"
+      },
+      {
+        "id": "b723540d-66b1-4ecc-8cad-ef242ae7f997",
+        "title": "Eval C",
+        "start": "2025-12-08T08:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "5b58c4ec-34c7-47b6-813c-b940bee8c51b",
+        "title": "Semaine Vacances",
+        "start": "2025-10-30T07:00",
+        "duration": 150,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#10b981"
+      },
+      {
+        "id": "53c1d8da-15b5-47e3-89a0-aafd209b558a",
+        "title": "SAE !",
+        "start": "2025-10-17T13:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff0000"
+      },
+      {
+        "id": "6da7d2ff-0aa2-466f-9062-1549ee841c2f",
+        "title": "Anniversaire MOI",
+        "start": "2025-06-17T07:00",
+        "duration": 120,
+        "recurrence": "yearly",
+        "typeId": "03e4c959-b928-4a7c-a36c-4b9f0d907adf",
+        "color": "#a5e3fd"
+      },
+      {
+        "id": "f5beab2d-5562-457a-a345-1ebd50217755",
+        "title": "Anniversaire Timothée",
+        "start": "2025-06-20T07:00",
+        "duration": 135,
+        "recurrence": "yearly",
+        "typeId": "03e4c959-b928-4a7c-a36c-4b9f0d907adf",
+        "color": "#a5e3fd"
+      },
+      {
+        "id": "ee86a98d-508b-4f30-9bb6-de47da262b14",
+        "title": "2 DECEMBRE",
+        "start": "2025-12-02T07:00",
+        "duration": 960,
+        "recurrence": "yearly",
+        "typeId": "",
+        "color": "#ffd505"
+      },
+      {
+        "id": "888d5e5d-c7c7-4ef7-930c-e1a0848d67d1",
+        "title": "Test Architecture Ordi",
+        "start": "2025-10-13T08:00",
+        "duration": 135,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "63e1e33f-d00e-4214-b016-2edbe7da495d",
+        "title": "Optique",
+        "start": "2025-10-13T10:15",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "9ac654af-c33d-4942-8d11-f72588ea00bb",
+        "title": "Optique",
+        "start": "2025-10-11T10:00",
+        "duration": 180,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "35b9b0a1-a33c-46c0-b35c-98bd9973b585",
+        "title": "Optique",
+        "start": "2025-10-12T10:00",
+        "duration": 180,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "fee14368-b7a4-41c5-9348-228c9ba4b315",
+        "title": "Architecture Ordi ?",
+        "start": "2025-10-12T15:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "37c5cb50-d1ef-4f34-98bc-a0d678349965",
+        "title": "Espagnol !!!",
+        "start": "2025-10-14T17:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "603bb66c-1819-40d2-a526-450a5956d075",
+        "title": "Español",
+        "start": "2025-10-15T08:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "2c52f83e-e092-4821-99ea-e245120d44a8",
+        "title": "Oral Eco",
+        "start": "2025-10-17T08:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "a12589de-37d7-43b7-b099-06e022af53e7",
+        "title": "DEV",
+        "start": "2025-10-13T15:30",
+        "duration": 150,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#10b981"
+      },
+      {
+        "id": "4702575b-0bac-47c7-9de5-7f5657cdcb0b",
+        "title": "Diner avec les autres",
+        "start": "2025-10-15T20:00",
+        "duration": 180,
+        "recurrence": "none",
+        "typeId": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "color": "#c73c00"
+      },
+      {
+        "id": "3b381857-9afd-436f-8415-73e3e9bc4772",
+        "title": "SAE",
+        "start": "2025-10-14T19:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "3c89c0e1-8e03-459b-a775-331c8f9a0534",
+        "title": "Cours",
+        "start": "2025-10-14T08:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "da3135c1-9856-4692-ae62-08dfa3f92d9d",
+        "title": "Cours",
+        "start": "2025-10-14T13:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "09fec00f-912f-4d62-91a7-0e0a5f5e939e",
+        "title": "Cours",
+        "start": "2025-10-15T10:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "d3ad71bb-3654-4410-b76e-f6ccea9c79b8",
+        "title": "Cours",
+        "start": "2025-10-15T13:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "65fd4848-9059-42e8-b0b8-a20fcdd6bd6b",
+        "title": "Cours",
+        "start": "2025-10-16T08:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "23300543-e711-4f07-80e9-7d14703d8d33",
+        "title": "Cours",
+        "start": "2025-10-17T10:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#000000"
+      },
+      {
+        "id": "d51f6a80-e6a2-493e-b501-ee1d31aa12bf",
+        "title": "DM Electrocinétique",
+        "start": "2025-10-16T13:00",
+        "duration": 390,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "7f8df715-f310-4540-ad89-71c73ef037ec",
+        "title": "Test Théorie des langages (papiers autorisés)",
+        "start": "2025-11-07T08:00",
+        "duration": 150,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "fafc27f4-b9c4-4df5-85df-9dcbba7d7317",
+        "title": "Electrocinétique",
+        "start": "2025-10-22T10:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "25881846-3e85-48c6-9c39-d537a4828e4a",
+        "title": "Optique",
+        "start": "2025-11-03T08:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "cff08458-87c5-47bc-b5ba-a8ff9ca095c8",
+        "title": "Finir Activité 5 Electro",
+        "start": "2025-11-04T15:00",
+        "duration": 165,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "28a6a4d1-4d45-4605-b3db-7e52d4ac4071",
+        "title": "Electronique",
+        "start": "2025-11-02T10:00",
+        "duration": 300,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "284c1070-0d1a-4abc-98be-998707faaac8",
+        "title": "Révision Optique",
+        "start": "2025-11-02T15:00",
+        "duration": 150,
+        "recurrence": "none",
+        "typeId": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "color": "#0c3973"
+      },
+      {
+        "id": "a8687fcd-3b14-4492-8543-7732ed696d12",
+        "title": "DEV",
+        "start": "2025-11-01T16:30",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#10b981"
+      },
+      {
+        "id": "3a72fa93-160a-45a5-9ed7-5a796fba4c30",
+        "title": "/!\\ RENDU SAE",
+        "start": "2025-11-06T19:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff0000"
+      },
+      {
+        "id": "0d475397-0800-4e22-aae6-c4ef06e4968d",
+        "title": "Algèbre",
+        "start": "2025-11-14T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "7d96db7b-2fb7-4111-ba96-28d9dff03851",
+        "title": "Analyse",
+        "start": "2025-11-14T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "947c9ae4-7d97-4913-a489-1945af3740ce",
+        "title": "UML",
+        "start": "2025-11-17T15:00",
+        "duration": 195,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "78bf04db-a758-4c31-8441-4ec850a25369",
+        "title": "Présentation Project PP",
+        "start": "2025-11-28T10:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#60e1b6"
+      },
+      {
+        "id": "6d31f2a6-f504-434b-8fc1-568a8c19afb9",
+        "title": "RDV MOISE",
+        "start": "2025-11-25T17:00",
+        "duration": 105,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff7a70"
+      },
+      {
+        "id": "87eb81d5-b0c7-4f2a-b4ca-e12c5bbcb937",
+        "title": "RENDU SAE N°3",
+        "start": "2025-11-26T11:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff0000"
+      },
+      {
+        "id": "88e2d9ed-4cab-4473-a27a-48732824e972",
+        "title": "RENDU SAE N°4",
+        "start": "2025-12-13T07:00",
+        "duration": 960,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff0000"
+      },
+      {
+        "id": "bd2baa05-9026-4b98-ac1f-c37d882a442f",
+        "title": "RENDU N°5",
+        "start": "2026-01-12T07:00",
+        "duration": 960,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#ff0000"
+      },
+      {
+        "id": "5f102a8c-9c44-4a13-9670-10b61b5af462",
+        "title": "Projet Info - Oral",
+        "start": "2025-11-19T13:15",
+        "duration": 195,
+        "recurrence": "none",
+        "typeId": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "3d90bd94-1c16-4327-8265-18f21a08bcc2",
+        "title": "Coiffeur",
+        "start": "2025-11-27T14:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#16196f"
+      },
+      {
+        "id": "b006265e-4843-484d-b938-8360c8e9dde1",
+        "title": "Raclette",
+        "start": "2025-11-29T19:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "color": "#c73c00"
+      },
+      {
+        "id": "05bd39c3-c67b-48a0-a3c3-f9d039f35ffc",
+        "title": "Foire",
+        "start": "2025-11-26T19:00",
+        "duration": 240,
+        "recurrence": "none",
+        "typeId": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "color": "#c73c00"
+      },
+      {
+        "id": "7e604374-80dc-46ed-9056-c1395b9ab057",
+        "title": "Foire",
+        "start": "2025-11-19T18:15",
+        "duration": 285,
+        "recurrence": "none",
+        "typeId": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "color": "#c73c00"
+      },
+      {
+        "id": "69316f21-d195-4d18-b71f-8819b6b78109",
+        "title": "VACANCES",
+        "start": "2025-12-19T16:30",
+        "duration": 390,
+        "recurrence": "none",
+        "typeId": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "color": "#c73c00"
+      },
+      {
+        "id": "ecfca0a5-6cd6-4b60-89c1-5a9f48c14957",
+        "title": "MONTER MON PUTAIN DE STORE",
+        "start": "2025-11-22T11:00",
+        "duration": 120,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#1088bc"
+      },
+      {
+        "id": "1054f7a6-38d1-45af-af95-2ee7b2879b04",
+        "title": "Anniversaire Robin",
+        "start": "2025-04-11T07:00",
+        "duration": 120,
+        "recurrence": "yearly",
+        "typeId": "03e4c959-b928-4a7c-a36c-4b9f0d907adf",
+        "color": "#a5e3fd"
+      },
+      {
+        "id": "311c5fc2-945d-4285-9fb1-f3a46b758684",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-28T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "536fa3a2-e533-4613-9243-d1d54a9a925f",
+        "title": "Cours Gr 2 - SAÉ - Démarche scientifique 3;SAÉ - Démarche scientifique 3",
+        "start": "2025-11-28T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "792daa88-25f8-43ed-9cd9-6df77cab002f",
+        "title": "TA Gp2 - TA;TA",
+        "start": "2025-11-28T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "722e8005-17f4-494b-b0cc-192af63a12d7",
+        "title": "Cours - Optique",
+        "start": "2025-11-28T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "903b945d-ea4f-4fd8-8269-569eb9faa87d",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-27T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "31952918-7bb8-402e-8599-07f7996fdaa6",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-27T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "32038a80-3a13-42fb-ae85-2edd986aba8c",
+        "title": "TA ESP - Espagnol 3;Espagnol 3",
+        "start": "2025-11-26T16:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "d8c18ef4-b520-4593-aa06-c54a4fb0edd8",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-26T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "2066e477-1411-401f-b3d2-8649f5325e6c",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-26T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "4f98f6fb-73f4-4be7-8e71-fee2a9707f54",
+        "title": "Cours - Electronique",
+        "start": "2025-11-26T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "3a62797d-3131-4569-8442-78252d06cb62",
+        "title": "Cours Gr 1 - Espagnol 3;Espagnol 3",
+        "start": "2025-11-26T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "5691ea81-d2e5-4654-9481-be08e3d6d3de",
+        "title": "Cours Gr 1 - Anglais 3;Anglais 3",
+        "start": "2025-11-25T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "6949cd17-6fe1-467c-98e3-6d2de255ab34",
+        "title": "Cours - Electronique",
+        "start": "2025-11-25T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "9a5d2ab6-f82f-4cf0-a4b3-a36a13c95563",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-25T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "75073ce6-872e-4e9a-b6c4-65cf0f4c5ea2",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-25T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "574b4cdd-2aa5-4661-8307-cbcb95b02231",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-24T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "3c287055-4103-4f42-9218-7d549480c865",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-24T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "8a89d8b3-e111-47be-94f6-44feeda1883e",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-24T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "c8051b7c-1601-40d0-89ff-bec2ae74f37d",
+        "title": "Cours Gr 2 - Calcul algébrique 3;Calcul algébrique 3",
+        "start": "2025-11-24T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "f5bcd1bb-57e7-4549-aeb7-cc28811c1977",
+        "title": "Cours - Protocoles et réseaux",
+        "start": "2025-11-21T16:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "79ece2f9-1767-4e4f-a850-debe0ccaa1fd",
+        "title": "Cours - Protocoles et réseaux",
+        "start": "2025-11-21T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "28c94e1e-163a-4553-b35a-837c4f761cfc",
+        "title": "Cours - Protocoles et réseaux",
+        "start": "2025-11-21T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "d36dcf01-ad6e-4b33-99e8-54e5e8d9105e",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-21T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "6e4fcffc-7dea-4ec1-9972-ddf8ffdec455",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-21T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "2c4bc0ef-a7f4-4c69-92a9-6a66a22adb0b",
+        "title": "TA Gp2 - TA;TA",
+        "start": "2025-11-20T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "49a5e9f9-a576-475a-b7e7-71b7d498c367",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-20T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "a9814e41-5048-4580-89e7-f51254be866b",
+        "title": "Soutien - Optique",
+        "start": "2025-11-19T16:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "a397c672-0504-468b-ad6f-9a0669db3e49",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-19T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "041169bc-8ece-46b7-adc3-b8af5a27ff31",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-19T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "8049273e-5335-4cfa-ba05-351c0709e260",
+        "title": "Cours - Electronique",
+        "start": "2025-11-19T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "06db19c5-46a1-4cd0-9300-e049e7ff0bf6",
+        "title": "Cours Gr 1 - Espagnol 3;Espagnol 3",
+        "start": "2025-11-19T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "c054d43f-4a67-44a7-87ff-172753f328d4",
+        "title": "Soutien - Electronique",
+        "start": "2025-11-18T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "199397e9-0bcb-4767-9997-09aa8c43674d",
+        "title": "Cours Gr 1 - Anglais 3;Anglais 3",
+        "start": "2025-11-18T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "eb16ab72-beee-4f86-9dce-50724c26260c",
+        "title": "Cours - Programmation système 3 (langage C)",
+        "start": "2025-11-18T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "f487a8d7-c82f-429a-9021-759606d51161",
+        "title": "Cours - Programmation système 3 (langage C)",
+        "start": "2025-11-18T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "86ee97bd-e23a-4eb0-b79c-6ced2bc2ad7f",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-17T16:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "6d992768-f813-4d27-877d-c70dea2cc918",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-17T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "c4fd0141-3a62-4fd7-a314-b25782194f97",
+        "title": "Cours - Optique",
+        "start": "2025-11-17T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "db61e469-79df-429b-aa1f-f6d7970a08a6",
+        "title": "Cours - Programmation système 3 (langage C)",
+        "start": "2025-11-17T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "960afada-b845-4cd8-9550-be37684e9cd8",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-17T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "6ced2d64-196e-4d66-b113-e6c508876216",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-14T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "acf1fd7e-f351-4b89-b917-c0ba920e6299",
+        "title": "Cours Gr 2 - Calcul algébrique 3;Calcul algébrique 3",
+        "start": "2025-11-14T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "d673a523-e7c8-4c2e-a1f1-e02ee6ab91a9",
+        "title": "Cours - Qualité - Rencontre;Qualité - Rencontre",
+        "start": "2025-11-14T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "cb38f115-72e0-4050-800f-45126fab6675",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-14T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "a47d6cb8-506e-422b-ba22-7cf48d27890b",
+        "title": "Cours - Electronique",
+        "start": "2025-11-13T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "4098e2dd-686e-4fa3-abd2-36657de81f29",
+        "title": "Soutien - Analyse mathématique 3",
+        "start": "2025-11-13T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "d9482ce6-bb4b-474e-8b2b-86aa0934eeba",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-12T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "ab35ba58-9c16-49a3-a2c4-39890ae3d77f",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-12T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "47e51246-28fa-437b-827b-1ac9b01bde94",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-12T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "ad6056c5-0652-4a1f-8669-2d87ca550b0f",
+        "title": "Cours Gr 1 - Espagnol 3;Espagnol 3",
+        "start": "2025-11-12T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "e9df58e3-b272-484e-8073-151cf196c497",
+        "title": "Cours Gr 2 - SAÉ - Démarche scientifique 3;SAÉ - Démarche scientifique 3",
+        "start": "2025-11-10T16:45",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "a02b4bf1-8346-4c02-98de-654e7d0086ba",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-10T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "4ee1316e-2e12-44ad-a737-23bf4b94e100",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-10T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "3db631ee-1c3a-4796-8847-46cb0b5578bf",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-10T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "e20a5239-a4e6-4946-a3df-ccdaf64d5aa2",
+        "title": "Cours Gr 2 - Calcul algébrique 3;Calcul algébrique 3",
+        "start": "2025-11-10T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "eb57938e-e7d2-45dd-8112-a288f0056aef",
+        "title": "Cours Gr 2 - Responsabilité sociétale des entreprises;Responsabilité sociétale des entreprises",
+        "start": "2025-11-07T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "0c6c13aa-83c7-473d-9b3e-0112af6d8762",
+        "title": "Cours Gr 2 - Analyse mathématique 3;Analyse mathématique 3",
+        "start": "2025-11-07T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "e0045359-77d0-4886-b57c-5065a0cab9ed",
+        "title": "Soutien - Calcul algébrique 3;Calcul algébrique 3",
+        "start": "2025-11-07T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "1ebda214-0fe6-41d3-b58b-7c817b43b8a2",
+        "title": "Cours - Théorie des langages",
+        "start": "2025-11-07T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "facec01f-502d-4a03-a3e0-3a6edd89acd8",
+        "title": "Cours - Architecture des ordinateurs",
+        "start": "2025-11-06T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "c8ad4800-6ca3-44b8-8556-902a7ec5c564",
+        "title": "Cours - Optique",
+        "start": "2025-11-06T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "963e7e71-7c01-467b-a210-8424211302f2",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-05T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "4dec3fb3-9af3-478b-b741-cb3a221826ab",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-05T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "f6eae506-586c-4b6c-b807-4243a7d3007b",
+        "title": "Cours - Projet personnel 3;Projet personnel 3",
+        "start": "2025-11-05T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "8a842e09-3050-4ae3-b130-00015e03cda9",
+        "title": "Cours Gr 1 - Espagnol 3;Espagnol 3",
+        "start": "2025-11-05T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "86c24783-a97c-44af-9de0-14a33c32f200",
+        "title": "Cours - Electronique",
+        "start": "2025-11-04T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "10ed5d1c-acc7-4a17-a0b4-2cf935024f86",
+        "title": "Cours Gr 1 - Anglais 3;Anglais 3",
+        "start": "2025-11-04T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "24d07aa2-fb89-4409-8938-b3e64c8b5178",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-04T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "aa69f8ca-f8a1-41a1-bcaf-27e33f3d68e9",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-04T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "39103788-99e8-49cd-b532-eae06d4dc14d",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-03T15:00",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "9fe65380-8240-4df4-bb2f-8a2c724770bc",
+        "title": "Cours - Gestion de projet informatique",
+        "start": "2025-11-03T13:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "cdf78eba-01ef-4444-919e-5b0667d1d794",
+        "title": "Cours - Modélisation et spécification (UML)",
+        "start": "2025-11-03T10:15",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      },
+      {
+        "id": "194c10c6-32c1-46e5-88c2-0315f9811554",
+        "title": "Cours - Optique",
+        "start": "2025-11-03T08:30",
+        "duration": 90,
+        "recurrence": "none",
+        "typeId": "",
+        "color": "#66B2FF",
+        "source": "esaip"
+      }
+    ],
+    "lastWeekStart": "2025-11-30T23:00:00.000Z",
+    "types": [
+      {
+        "id": "03e4c959-b928-4a7c-a36c-4b9f0d907adf",
+        "name": "Anniversaire",
+        "color": "#a5e3fd"
+      },
+      {
+        "id": "ed616ebf-0f6a-4159-9f63-4c8def67d9b4",
+        "name": "Evaluation ESAIP",
+        "color": "#b81e1e"
+      },
+      {
+        "id": "aa5a06d6-e20a-470d-9964-491f85fb3967",
+        "name": "Travail / Révision ESAIP",
+        "color": "#0c3973"
+      },
+      {
+        "id": "b6e92d57-d6fc-4ec7-975b-fe7f595d8988",
+        "name": "Loisir",
+        "color": "#c73c00"
+      }
+    ]
+  },
+  "mindmap": {
+    "maps": [
+      {
+        "id": "bbac9af7-0f11-490e-b3ba-80747925f280",
+        "name": "Carte 1",
+        "nodes": [],
+        "links": []
+      }
+    ],
+    "activeMapId": "bbac9af7-0f11-490e-b3ba-80747925f280"
+  },
+  "todo": {
+    "blocks": [
+      {
+        "id": "321f5658-917a-4624-936c-9f45049732fd",
+        "title": "Khronotopia",
+        "items": [
+          {
+            "id": "21d45c2f-7a31-4a05-99b8-1b02e0537875",
+            "text": "Arbres : France, Allemagne, Grande Bretagne, USA, Russie",
+            "done": false
+          },
+          {
+            "id": "bfab3c15-1dc9-458a-8ef3-cd179545b086",
+            "text": "Portraits x1000",
+            "done": false
+          },
+          {
+            "id": "ed10aa13-c21b-41cb-94de-1d73217ca252",
+            "text": "Finir actions d'évènement militaire, institutionnel et géopolitique",
+            "done": false
+          }
+        ]
+      },
+      {
+        "id": "d571b45c-f1ea-41dc-a7ff-01a98b7281fd",
+        "title": "ESAIP - Homework",
+        "items": [
+          {
+            "id": "61fa6065-5895-4689-94c5-1b9423db57f4",
+            "text": "Prochain travail en SAE ",
+            "done": false
+          }
+        ]
+      },
+      {
+        "id": "2d966966-a09e-4046-836b-dae2ee02bc95",
+        "title": "RANDOM",
+        "items": [
+          {
+            "id": "acea9ba0-0809-4089-9340-603c7b37ab91",
+            "text": "Reprendre mon ancien ordi (trier et réinitialiser)",
+            "done": false
+          }
+        ]
+      }
+    ]
+  },
+  "gantt": {
+    "charts": [
+      {
+        "id": "a0b714c9-2ee2-4fdb-9d9a-f5d6a046f131",
+        "name": "Khronotopia",
+        "tasks": [
+          {
+            "id": "94b0d46f-509d-4d5a-bfa7-2d60de78ff1d",
+            "name": "Création Focus",
+            "start": "2025-10-29",
+            "end": "2025-11-02",
+            "progress": 100
+          },
+          {
+            "id": "7cf47d0c-cebe-48bf-b721-c6432abd8fc8",
+            "name": "Début arbre priorité France 1910",
+            "start": "2025-11-03",
+            "end": "2025-11-09",
+            "progress": 0
+          }
+        ]
+      }
+    ],
+    "activeChartId": "a0b714c9-2ee2-4fdb-9d9a-f5d6a046f131"
+  },
+  "alcuin": {
+    "lastFetchDate": "2025-11-23",
+    "login": "roprea.ing2029",
+    "password": "NewUfeuki0698!"
+  }
+}
