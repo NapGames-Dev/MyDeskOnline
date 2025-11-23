@@ -193,13 +193,17 @@
           Recharger l'emploi du temps depuis timetable.json
         </button>
 
+        <button id="esaip-fetch-timetable" data-i18n="esaip.fetchButton">
+          Récupérer les données depuis Alcuin
+        </button>
+
         <p id="esaip-status" class="storage-status"></p>
         <p id="esaip-last-fetch" class="hint"></p>
       </div>
 
       <p class="hint" data-i18n="esaip.hint">
-        Pour mettre à jour les cours : lancez <code>scraper.exe</code> dans le dossier de sauvegarde,
-        puis cliquez sur "Recharger l'emploi du temps".
+        Utilisez le bouton «&nbsp;Récupérer les données&nbsp;» pour lancer le scraping Alcuin puis
+        «&nbsp;Recharger l'emploi du temps&nbsp;» pour mettre l'agenda à jour.
       </p>
     </section>
     <section id="trackirigo" class="tab-panel active">
@@ -260,6 +264,7 @@
   </div>
 
   <object id="local-version-source" type="application/json" data="version.json" aria-hidden="true" hidden></object>
+  <script type="module" src="scraper.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>
