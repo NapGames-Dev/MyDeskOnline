@@ -27,7 +27,6 @@
       <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
       <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
       <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
-      <button class="tab-link" data-target="esaip" data-i18n="tabs.esaip">ESAIP</button>
     </nav>
   </header>
 
@@ -61,14 +60,6 @@
         <div class="calendar-actions">
           <button id="today-button" data-i18n="calendar.today">Aujourd'hui</button>
           <span class="hint" data-i18n="calendar.hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
-        </div>
-        <div id="calendar-esaip-toggle-wrapper" class="calendar-actions" style="display:none;">
-          <label style="display:flex; align-items:center; gap:0.35rem;">
-            <input type="checkbox" id="calendar-esaip-toggle" checked>
-            <span data-i18n="calendar.esaipToggleLabel">
-              Afficher les cours ESAIP
-            </span>
-          </label>
         </div>
       </div>
       <div class="calendar-content">
@@ -164,48 +155,6 @@
         </div>
       </div>
     </section>
-    <section id="esaip" class="tab-panel">
-      <h2 data-i18n="esaip.heading">Connexion ESAIP / Alcuin</h2>
-      <p data-i18n="esaip.description">
-        Entrez vos identifiants ESAIP. Ils sont stockés uniquement en local.
-        Le scraper Node utilisera aussi le fichier <code>credentials.txt</code>.
-      </p>
-
-      <div class="storage-controls">
-        <label>
-          <span data-i18n="esaip.loginLabel">Identifiant</span>
-          <input type="text" id="esaip-login">
-        </label>
-
-        <label>
-          <span data-i18n="esaip.passwordLabel">Mot de passe</span>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <input type="password" id="esaip-password" style="flex:1;">
-            <button type="button" id="esaip-toggle-password" aria-label="Afficher / masquer le mot de passe">
-              👁
-            </button>
-          </div>
-        </label>
-
-        <button id="esaip-save-credentials" data-i18n="esaip.saveButton">Enregistrer les identifiants</button>
-
-        <button id="esaip-sync-timetable" data-i18n="esaip.syncButton">
-          Recharger l'emploi du temps depuis timetable.json
-        </button>
-
-        <button id="esaip-fetch-timetable" data-i18n="esaip.fetchButton">
-          Récupérer les données depuis Alcuin
-        </button>
-
-        <p id="esaip-status" class="storage-status"></p>
-        <p id="esaip-last-fetch" class="hint"></p>
-      </div>
-
-      <p class="hint" data-i18n="esaip.hint">
-        Utilisez le bouton «&nbsp;Récupérer les données&nbsp;» pour lancer le scraping Alcuin puis
-        «&nbsp;Recharger l'emploi du temps&nbsp;» pour mettre l'agenda à jour.
-      </p>
-    </section>
     <section id="trackirigo" class="tab-panel active">
       <div class="embedded-site">
         <iframe
@@ -264,7 +213,6 @@
   </div>
 
   <object id="local-version-source" type="application/json" data="version.json" aria-hidden="true" hidden></object>
-  <script type="module" src="scraper.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>
