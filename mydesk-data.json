@@ -703,6 +703,15 @@
     ],
     "activeChartId": "a0b714c9-2ee2-4fdb-9d9a-f5d6a046f131"
   },
+  "tabs": {
+    "visibility": {
+      "calendar": true,
+      "mindmap": true,
+      "todo": true,
+      "gantt": true,
+      "trackirigo": true
+    }
+  },
   "alcuin": {
     "lastFetchDate": "2025-11-24",
     "login": "roprea.ing2029",

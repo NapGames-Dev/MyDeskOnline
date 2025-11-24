@@ -49,7 +49,7 @@ const GANTT_DAY_WIDTH = 64;
 const VERSION_INDICATOR_ID = 'version-indicator';
 const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json';
 const LOCAL_VERSION_INFO = {
-  version: '1.3.0',
+  version: '1.4.0',
   versionCheckUrl: 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json'
 };
 const VERSION_INDICATOR_STATES = {
