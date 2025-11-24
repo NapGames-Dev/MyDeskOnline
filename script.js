@@ -17,8 +17,25 @@ const defaultData = {
   gantt: {
     charts: [],
     activeChartId: null
+  },
+  tabs: {
+    visibility: {
+      calendar: true,
+      mindmap: true,
+      todo: true,
+      gantt: true,
+      trackirigo: true
+    }
   }
 };
+
+const OPTIONAL_TABS = [
+  { id: 'calendar', labelKey: 'tabs.calendar' },
+  { id: 'mindmap', labelKey: 'tabs.mindmap' },
+  { id: 'todo', labelKey: 'tabs.todo' },
+  { id: 'gantt', labelKey: 'tabs.gantt' },
+  { id: 'trackirigo', labelKey: 'tabs.track' }
+];
 
 const DEFAULT_EVENT_COLOR = '#10b981';
 const MIN_EVENT_DURATION = 15;
@@ -63,6 +80,8 @@ const translations = {
     app: { title: 'MyDesk Online - By Nap' },
     tabs: {
       home: 'Accueil',
+      settings: 'Paramètres',
+      settingsAria: 'Onglet paramètres',
       calendar: 'Agenda',
       mindmap: 'Cartes mentales',
       todo: 'To Do List',
@@ -202,6 +221,10 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Carte Irigo"
+    },
+    settings: {
+      title: 'Paramètres',
+      description: 'Choisissez les onglets que vous souhaitez afficher.'
     }
   },
   en: {
@@ -215,6 +238,8 @@ const translations = {
     app: { title: 'MyDesk Online - By Nap' },
     tabs: {
       home: 'Home',
+      settings: 'Settings',
+      settingsAria: 'Settings tab',
       calendar: 'Calendar',
       mindmap: 'Mind Maps',
       todo: 'To-Do List',
@@ -354,6 +379,10 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Irigo map"
+    },
+    settings: {
+      title: 'Settings',
+      description: 'Choose which tabs you want to display.'
     }
   },
   vi: {
@@ -367,6 +396,8 @@ const translations = {
     app: { title: 'MyDesk Online - By Nap' },
     tabs: {
       home: 'Trang chủ',
+      settings: 'Cài đặt',
+      settingsAria: 'Thẻ cài đặt',
       calendar: 'Lịch',
       mindmap: 'Sơ đồ tư duy',
       todo: 'Danh sách công việc',
@@ -506,6 +537,10 @@ const translations = {
     },
     track: {
       iframeTitle: "Track'Irigo – Bản đồ Irigo"
+    },
+    settings: {
+      title: 'Cài đặt',
+      description: 'Chọn các thẻ bạn muốn hiển thị.'
     }
   }
 };
@@ -532,6 +567,8 @@ let saveTimer = null;
 let calendarHourHeight = 48;
 let resizeState = null;
 let lastStorageStatus = null;
+let tabLinks = [];
+let activateTabHandler = null;
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(defaultData));
@@ -687,6 +724,7 @@ function setLanguage(language) {
   renderMindmap();
   renderGantt();
   renderTodo();
+  renderTabVisibilitySettings();
   refreshStorageStatus();
   refreshVersionIndicator();
   syncLinkButton();
@@ -1091,6 +1129,18 @@ function migrateData() {
   } else if (!appData.gantt.activeChartId || !appData.gantt.charts.some((chart) => chart.id === appData.gantt.activeChartId)) {
     appData.gantt.activeChartId = appData.gantt.charts[0].id;
   }
+
+  if (!appData.tabs || typeof appData.tabs !== 'object') {
+    appData.tabs = cloneDefault().tabs;
+  }
+  if (!appData.tabs.visibility || typeof appData.tabs.visibility !== 'object') {
+    appData.tabs.visibility = { ...cloneDefault().tabs.visibility };
+  }
+  OPTIONAL_TABS.forEach((tab) => {
+    if (typeof appData.tabs.visibility[tab.id] !== 'boolean') {
+      appData.tabs.visibility[tab.id] = true;
+    }
+  });
 }
 
 function updateStorageStatus(messageKey, type = 'info', variables = {}) {
@@ -1123,6 +1173,10 @@ async function initData() {
       gantt: {
         ...cloneDefault().gantt,
         ...(fileData.gantt ? fileData.gantt : appData.gantt)
+      },
+      tabs: {
+        ...cloneDefault().tabs,
+        ...(fileData.tabs ? fileData.tabs : appData.tabs)
       }
     };
     updateStorageStatus('storage.loadedFromDisk', 'success');
@@ -1136,9 +1190,9 @@ async function initData() {
 }
 
 function initTabs() {
-  const links = Array.from(document.querySelectorAll('.tab-link'));
+  tabLinks = Array.from(document.querySelectorAll('.tab-link'));
   const activateTab = (link) => {
-    links.forEach((l) => l.classList.remove('active'));
+    tabLinks.forEach((l) => l.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
     link.classList.add('active');
     document.getElementById(link.dataset.target).classList.add('active');
@@ -1154,17 +1208,89 @@ function initTabs() {
       });
     }
   };
-  links.forEach((link) => {
+  activateTabHandler = activateTab;
+  applyTabVisibility();
+  tabLinks.forEach((link) => {
     link.addEventListener('click', () => {
       activateTab(link);
       checkVersionStatus();
     });
   });
 
-  const initiallyActive = links.find((link) => link.classList.contains('active'));
+  const initiallyActive =
+    tabLinks.find((link) => link.classList.contains('active') && !link.classList.contains('is-hidden')) ||
+    tabLinks.find((link) => !link.classList.contains('is-hidden'));
   if (initiallyActive) {
     activateTab(initiallyActive);
   }
+}
+
+function getTabVisibility(tabId) {
+  if (!appData.tabs || !appData.tabs.visibility) {
+    return true;
+  }
+  if (typeof appData.tabs.visibility[tabId] === 'boolean') {
+    return appData.tabs.visibility[tabId];
+  }
+  return true;
+}
+
+function applyTabVisibility() {
+  const links = tabLinks.length ? tabLinks : Array.from(document.querySelectorAll('.tab-link'));
+  OPTIONAL_TABS.forEach((tab) => {
+    const visible = getTabVisibility(tab.id);
+    const button = document.querySelector(`.tab-link[data-target="${tab.id}"]`);
+    const panel = document.getElementById(tab.id);
+    if (button) {
+      button.classList.toggle('is-hidden', !visible);
+      button.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    }
+    if (panel) {
+      panel.classList.toggle('is-hidden', !visible);
+    }
+  });
+
+  if (activateTabHandler && links.length > 0) {
+    const activeLink = links.find((link) => link.classList.contains('active'));
+    if (activeLink && activeLink.classList.contains('is-hidden')) {
+      const fallback = links.find((link) => !link.classList.contains('is-hidden'));
+      if (fallback) {
+        activateTabHandler(fallback);
+      }
+    }
+  }
+}
+
+function renderTabVisibilitySettings() {
+  const container = document.getElementById('tab-visibility-settings');
+  if (!container) return;
+  container.innerHTML = '';
+
+  OPTIONAL_TABS.forEach((tab) => {
+    const wrapper = document.createElement('label');
+    wrapper.className = 'settings-toggle';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = getTabVisibility(tab.id);
+    checkbox.addEventListener('change', () => {
+      appData.tabs.visibility[tab.id] = checkbox.checked;
+      applyTabVisibility();
+      saveData();
+    });
+
+    const label = document.createElement('span');
+    label.textContent = t(tab.labelKey);
+
+    wrapper.appendChild(checkbox);
+    wrapper.appendChild(label);
+    container.appendChild(wrapper);
+  });
+}
+
+function initSettings() {
+  renderTabVisibilitySettings();
+  applyTabVisibility();
 }
 
 function getVersionIndicator() {
@@ -1353,6 +1479,10 @@ function initStorageControls() {
         gantt: {
           ...cloneDefault().gantt,
           ...(imported.gantt ? imported.gantt : {})
+        },
+        tabs: {
+          ...cloneDefault().tabs,
+          ...(imported.tabs ? imported.tabs : {})
         }
       };
       migrateData();
@@ -1367,6 +1497,8 @@ function initStorageControls() {
       renderMindmapList();
       renderMindmap();
       renderTodo();
+      renderTabVisibilitySettings();
+      applyTabVisibility();
       pathInput.value = appData.storagePath ? appData.storagePath : '';
       updateStorageStatus('storage.importSuccess', 'success');
     } catch (error) {
@@ -2978,6 +3110,7 @@ async function bootstrap() {
   await initData();
   initTabs();
   initLocalization();
+  initSettings();
   initVersionIndicator();
   initStorageControls();
   initCalendar();
