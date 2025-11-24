@@ -22,6 +22,9 @@
     </div>
     <nav class="tab-bar">
       <button class="tab-link active" data-target="home" data-i18n="tabs.home">Accueil</button>
+      <button class="tab-link tab-link--icon" data-target="settings" data-i18n-aria-label="tabs.settingsAria">
+        <img src="settings_icon.png" alt="" aria-hidden="true" />
+      </button>
       <button class="tab-link" data-target="calendar" data-i18n="tabs.calendar">Agenda</button>
       <button class="tab-link" data-target="mindmap" data-i18n="tabs.mindmap">Cartes mentales</button>
       <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
@@ -48,6 +51,12 @@
         <input type="file" id="import-input" accept="application/json" hidden>
         <p class="storage-status" id="storage-status"></p>
       </div>
+    </section>
+
+    <section id="settings" class="tab-panel">
+      <h2 data-i18n="settings.title">Paramètres</h2>
+      <p data-i18n="settings.description">Choisissez les onglets que vous souhaitez afficher.</p>
+      <div class="settings-grid" id="tab-visibility-settings"></div>
     </section>
 
     <section id="calendar" class="tab-panel">
@@ -155,7 +164,7 @@
         </div>
       </div>
     </section>
-    <section id="trackirigo" class="tab-panel active">
+    <section id="trackirigo" class="tab-panel">
       <div class="embedded-site">
         <iframe
           src="https://yabrich.github.io"
