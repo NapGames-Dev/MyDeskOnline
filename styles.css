@@ -144,6 +144,23 @@ main {
   border: 1px solid transparent;
 }
 
+.tab-link--icon {
+  padding: 0.35rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tab-link--icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.tab-link.is-hidden {
+  display: none;
+}
+
 .tab-link.active {
   background: var(--primary);
   color: #fff;
@@ -159,8 +176,34 @@ main {
   min-height: 70vh;
 }
 
+.tab-panel.is-hidden {
+  display: none !important;
+}
+
 .tab-panel.active {
   display: block;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.settings-toggle input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .storage-controls {
