@@ -14,6 +14,10 @@ const defaultData = {
   todo: {
     blocks: []
   },
+  dailyChallenges: {
+    challenges: [],
+    completions: {}
+  },
   gantt: {
     charts: [],
     activeChartId: null
@@ -23,6 +27,7 @@ const defaultData = {
       calendar: true,
       mindmap: true,
       todo: true,
+      daily: true,
       gantt: true,
       trackirigo: true
     }
@@ -33,9 +38,12 @@ const OPTIONAL_TABS = [
   { id: 'calendar', labelKey: 'tabs.calendar' },
   { id: 'mindmap', labelKey: 'tabs.mindmap' },
   { id: 'todo', labelKey: 'tabs.todo' },
+  { id: 'daily', labelKey: 'tabs.daily' },
   { id: 'gantt', labelKey: 'tabs.gantt' },
   { id: 'trackirigo', labelKey: 'tabs.track' }
 ];
+
+const DAILY_HISTORY_DAYS = 14;
 
 const DEFAULT_EVENT_COLOR = '#10b981';
 const MIN_EVENT_DURATION = 15;
@@ -85,6 +93,7 @@ const translations = {
       calendar: 'Agenda',
       mindmap: 'Cartes mentales',
       todo: 'To Do List',
+      daily: 'Défis Quotidiens',
       gantt: 'GANTT',
       track: "Track'Irigo"
     },
@@ -219,6 +228,23 @@ const translations = {
       deleteTaskConfirm: 'Supprimer cette tâche du planning ?',
       barFallback: 'Tâche'
     },
+    daily: {
+      title: 'Défis quotidiens',
+      description: "Ajoutez des défis à accomplir chaque jour et consultez l'historique.",
+      nameLabel: 'Nom du défi',
+      namePlaceholder: 'Faire du sport',
+      includeWeekend: 'Inclure le week-end',
+      addChallenge: 'Ajouter un défi',
+      todayTitle: 'Défis du jour',
+      historyTitle: 'Historique des derniers jours',
+      empty: 'Ajoutez un défi pour commencer.',
+      todayEmpty: "Aucun défi prévu aujourd'hui.",
+      weekendExcluded: 'Non planifié le week-end',
+      deleteConfirm: 'Supprimer ce défi ?',
+      defaultName: 'Défi {index}',
+      completionLegend: 'Vert : fait, rouge : manqué, gris : non prévu, bleu : tout réalisé',
+      dateColumn: 'Jour'
+    },
     track: {
       iframeTitle: "Track'Irigo – Carte Irigo"
     },
@@ -243,6 +269,7 @@ const translations = {
       calendar: 'Calendar',
       mindmap: 'Mind Maps',
       todo: 'To-Do List',
+      daily: 'Daily Challenges',
       gantt: 'GANTT',
       track: "Track'Irigo"
     },
@@ -377,6 +404,23 @@ const translations = {
       deleteTaskConfirm: 'Delete this task from the schedule?',
       barFallback: 'Task'
     },
+    daily: {
+      title: 'Daily challenges',
+      description: 'Add daily challenges, check them off, and track your history.',
+      nameLabel: 'Challenge name',
+      namePlaceholder: 'Work out',
+      includeWeekend: 'Include weekends',
+      addChallenge: 'Add challenge',
+      todayTitle: "Today's challenges",
+      historyTitle: 'Recent history',
+      empty: 'Add a challenge to get started.',
+      todayEmpty: 'No challenge planned today.',
+      weekendExcluded: 'Not scheduled on weekends',
+      deleteConfirm: 'Delete this challenge?',
+      defaultName: 'Challenge {index}',
+      completionLegend: 'Green: done, red: missed, grey: not planned, blue: all done',
+      dateColumn: 'Day'
+    },
     track: {
       iframeTitle: "Track'Irigo – Irigo map"
     },
@@ -401,6 +445,7 @@ const translations = {
       calendar: 'Lịch',
       mindmap: 'Sơ đồ tư duy',
       todo: 'Danh sách công việc',
+      daily: 'Thử thách hằng ngày',
       gantt: 'GANTT',
       track: "Track'Irigo"
     },
@@ -534,6 +579,23 @@ const translations = {
       defaultTaskName: 'Nhiệm vụ {index}',
       deleteTaskConfirm: 'Xóa nhiệm vụ này khỏi kế hoạch?',
       barFallback: 'Nhiệm vụ'
+    },
+    daily: {
+      title: 'Thử thách hằng ngày',
+      description: 'Thêm thử thách mỗi ngày, đánh dấu hoàn thành và xem lịch sử.',
+      nameLabel: 'Tên thử thách',
+      namePlaceholder: 'Tập thể dục',
+      includeWeekend: 'Bao gồm cuối tuần',
+      addChallenge: 'Thêm thử thách',
+      todayTitle: 'Thử thách hôm nay',
+      historyTitle: 'Lịch sử gần đây',
+      empty: 'Thêm thử thách để bắt đầu.',
+      todayEmpty: 'Hôm nay không có thử thách.',
+      weekendExcluded: 'Không áp dụng cuối tuần',
+      deleteConfirm: 'Xóa thử thách này?',
+      defaultName: 'Thử thách {index}',
+      completionLegend: 'Xanh lá: đã làm, đỏ: bỏ lỡ, xám: không áp dụng, xanh dương: hoàn thành tất cả',
+      dateColumn: 'Ngày'
     },
     track: {
       iframeTitle: "Track'Irigo – Bản đồ Irigo"
@@ -723,6 +785,7 @@ function setLanguage(language) {
   renderMindmapList();
   renderMindmap();
   renderGantt();
+  renderDailyChallenges();
   renderTodo();
   renderTabVisibilitySettings();
   refreshStorageStatus();
@@ -767,6 +830,11 @@ function parseDateOnly(value) {
 function diffDays(start, end) {
   if (!(start instanceof Date) || !(end instanceof Date)) return 0;
   return Math.round((end.getTime() - start.getTime()) / DAY_IN_MS);
+}
+
+function isWeekend(date) {
+  const day = date.getDay();
+  return day === 0 || day === 6;
 }
 
 function uid() {
@@ -868,6 +936,10 @@ function loadFromLocalStorage() {
         ...cloneDefault().todo,
         ...(parsed.todo ? parsed.todo : {})
       },
+      dailyChallenges: {
+        ...cloneDefault().dailyChallenges,
+        ...(parsed.dailyChallenges ? parsed.dailyChallenges : {})
+      },
       gantt: {
         ...cloneDefault().gantt,
         ...(parsed.gantt ? parsed.gantt : {})
@@ -930,6 +1002,7 @@ function saveData() {
 }
 
 function migrateData() {
+  const todayISO = toISODateString(new Date());
   if (!appData.calendar || typeof appData.calendar !== 'object') {
     appData.calendar = cloneDefault().calendar;
   }
@@ -1068,6 +1141,33 @@ function migrateData() {
     };
   });
 
+  if (!appData.dailyChallenges || typeof appData.dailyChallenges !== 'object') {
+    appData.dailyChallenges = cloneDefault().dailyChallenges;
+  }
+
+  if (!Array.isArray(appData.dailyChallenges.challenges)) {
+    appData.dailyChallenges.challenges = [];
+  }
+
+  appData.dailyChallenges.challenges = appData.dailyChallenges.challenges.map((challenge, index) => ({
+    id: challenge && challenge.id ? challenge.id : uid(),
+    name: challenge && challenge.name ? challenge.name : t('daily.defaultName', { index: index + 1 }),
+    includeWeekend: typeof (challenge && challenge.includeWeekend) === 'boolean' ? challenge.includeWeekend : true,
+    createdAt:
+      challenge && typeof challenge.createdAt === 'string' ? challenge.createdAt : todayISO
+  }));
+
+  if (!appData.dailyChallenges.completions || typeof appData.dailyChallenges.completions !== 'object') {
+    appData.dailyChallenges.completions = {};
+  }
+
+  Object.keys(appData.dailyChallenges.completions).forEach((dateKey) => {
+    const entry = appData.dailyChallenges.completions[dateKey];
+    if (!entry || typeof entry !== 'object') {
+      appData.dailyChallenges.completions[dateKey] = {};
+    }
+  });
+
   if (!appData.gantt || typeof appData.gantt !== 'object') {
     appData.gantt = cloneDefault().gantt;
   }
@@ -1075,8 +1175,6 @@ function migrateData() {
   if (!Array.isArray(appData.gantt.charts)) {
     appData.gantt.charts = [];
   }
-
-  const todayISO = new Date().toISOString().split('T')[0];
 
   appData.gantt.charts = appData.gantt.charts.map((chart, index) => {
     const chartId = chart && chart.id ? chart.id : uid();
@@ -1169,6 +1267,10 @@ async function initData() {
       todo: {
         ...cloneDefault().todo,
         ...(fileData.todo ? fileData.todo : appData.todo)
+      },
+      dailyChallenges: {
+        ...cloneDefault().dailyChallenges,
+        ...(fileData.dailyChallenges ? fileData.dailyChallenges : appData.dailyChallenges)
       },
       gantt: {
         ...cloneDefault().gantt,
@@ -1475,6 +1577,10 @@ function initStorageControls() {
         todo: {
           ...cloneDefault().todo,
           ...(imported.todo ? imported.todo : {})
+        },
+        dailyChallenges: {
+          ...cloneDefault().dailyChallenges,
+          ...(imported.dailyChallenges ? imported.dailyChallenges : {})
         },
         gantt: {
           ...cloneDefault().gantt,
@@ -3106,6 +3212,256 @@ function createTodoItemElement(block, item) {
   return itemEl;
 }
 
+function isChallengeActiveForDate(challenge, date) {
+  if (!challenge || !(date instanceof Date)) return false;
+  const created = parseDateOnly(challenge.createdAt);
+  if (created && date < created) {
+    return false;
+  }
+  if (!challenge.includeWeekend && isWeekend(date)) {
+    return false;
+  }
+  return true;
+}
+
+function isChallengeDone(challengeId, dateISO) {
+  const entries = appData.dailyChallenges && appData.dailyChallenges.completions;
+  if (!entries || typeof entries !== 'object') return false;
+  const dayEntry = entries[dateISO];
+  return Boolean(dayEntry && dayEntry[challengeId]);
+}
+
+function setChallengeCompletion(challengeId, dateISO, done) {
+  if (!appData.dailyChallenges.completions[dateISO]) {
+    appData.dailyChallenges.completions[dateISO] = {};
+  }
+  appData.dailyChallenges.completions[dateISO][challengeId] = done;
+}
+
+function renderDailyHistory() {
+  const container = document.getElementById('daily-history');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const challenges = appData.dailyChallenges && Array.isArray(appData.dailyChallenges.challenges)
+    ? appData.dailyChallenges.challenges
+    : [];
+
+  if (challenges.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'daily-empty';
+    empty.textContent = t('daily.empty');
+    container.appendChild(empty);
+    return;
+  }
+
+  const table = document.createElement('div');
+  table.className = 'daily-history-table';
+  const gridTemplate = `160px repeat(${challenges.length}, minmax(90px, 1fr))`;
+
+  const header = document.createElement('div');
+  header.className = 'daily-history-row daily-history-row--header';
+  header.style.gridTemplateColumns = gridTemplate;
+
+  const dateHeader = document.createElement('div');
+  dateHeader.className = 'daily-history-cell daily-history-cell--date';
+  dateHeader.textContent = t('daily.dateColumn');
+  header.appendChild(dateHeader);
+
+  challenges.forEach((challenge) => {
+    const cell = document.createElement('div');
+    cell.className = 'daily-history-cell';
+    cell.textContent = challenge.name || '';
+    header.appendChild(cell);
+  });
+
+  table.appendChild(header);
+
+  for (let offset = 0; offset < DAILY_HISTORY_DAYS; offset += 1) {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - offset);
+    const dayISO = toISODateString(day);
+
+    let activeCount = 0;
+    let doneCount = 0;
+
+    const row = document.createElement('div');
+    row.className = 'daily-history-row';
+    row.style.gridTemplateColumns = gridTemplate;
+
+    const dateCell = document.createElement('div');
+    dateCell.className = 'daily-history-cell daily-history-cell--date';
+    dateCell.textContent = formatDate(day, { year: true });
+    row.appendChild(dateCell);
+
+    challenges.forEach((challenge) => {
+      const cell = document.createElement('div');
+      cell.className = 'daily-history-cell';
+      const active = isChallengeActiveForDate(challenge, day);
+      if (!active) {
+        cell.classList.add('is-inactive');
+        cell.textContent = '—';
+      } else {
+        activeCount += 1;
+        const done = isChallengeDone(challenge.id, dayISO);
+        if (done) {
+          doneCount += 1;
+          cell.classList.add('is-done');
+          cell.textContent = '✔';
+        } else {
+          cell.classList.add('is-missed');
+          cell.textContent = '✕';
+        }
+      }
+      row.appendChild(cell);
+    });
+
+    if (activeCount > 0 && activeCount === doneCount) {
+      row.classList.add('daily-history-row--complete');
+    }
+
+    table.appendChild(row);
+  }
+
+  container.appendChild(table);
+}
+
+function renderDailyTodayList() {
+  const container = document.getElementById('daily-today-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const challenges = appData.dailyChallenges && Array.isArray(appData.dailyChallenges.challenges)
+    ? appData.dailyChallenges.challenges
+    : [];
+
+  if (challenges.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'daily-empty';
+    empty.textContent = t('daily.empty');
+    container.appendChild(empty);
+    return;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayISO = toISODateString(today);
+
+  challenges.forEach((challenge, index) => {
+    const item = document.createElement('div');
+    item.className = 'daily-today-item';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = isChallengeDone(challenge.id, todayISO);
+    checkbox.disabled = !isChallengeActiveForDate(challenge, today);
+    checkbox.addEventListener('change', () => {
+      setChallengeCompletion(challenge.id, todayISO, checkbox.checked);
+      saveData();
+      renderDailyHistory();
+    });
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = challenge.name || t('daily.defaultName', { index: index + 1 });
+    nameInput.className = 'daily-inline-input';
+    nameInput.addEventListener('input', () => {
+      challenge.name = nameInput.value;
+      saveData();
+      renderDailyHistory();
+    });
+
+    const weekendToggle = document.createElement('label');
+    weekendToggle.className = 'daily-toggle';
+    const weekendInput = document.createElement('input');
+    weekendInput.type = 'checkbox';
+    weekendInput.checked = Boolean(challenge.includeWeekend);
+    weekendInput.addEventListener('change', () => {
+      challenge.includeWeekend = weekendInput.checked;
+      saveData();
+      renderDailyChallenges();
+    });
+    const weekendText = document.createElement('span');
+    weekendText.textContent = t('daily.includeWeekend');
+    weekendToggle.appendChild(weekendInput);
+    weekendToggle.appendChild(weekendText);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', () => {
+      if (!confirm(t('daily.deleteConfirm'))) return;
+      appData.dailyChallenges.challenges = challenges.filter((c) => c.id !== challenge.id);
+      Object.keys(appData.dailyChallenges.completions).forEach((dateKey) => {
+        if (appData.dailyChallenges.completions[dateKey]) {
+          delete appData.dailyChallenges.completions[dateKey][challenge.id];
+        }
+      });
+      saveData();
+      renderDailyChallenges();
+    });
+
+    const meta = document.createElement('span');
+    meta.className = 'meta';
+    if (!challenge.includeWeekend && isWeekend(today)) {
+      meta.textContent = t('daily.weekendExcluded');
+    }
+
+    item.appendChild(checkbox);
+    item.appendChild(nameInput);
+    item.appendChild(weekendToggle);
+    item.appendChild(deleteBtn);
+    if (meta.textContent) {
+      item.appendChild(meta);
+    }
+    container.appendChild(item);
+  });
+
+  if (!challenges.some((challenge) => isChallengeActiveForDate(challenge, today))) {
+    const empty = document.createElement('div');
+    empty.className = 'daily-empty';
+    empty.textContent = t('daily.todayEmpty');
+    container.appendChild(empty);
+  }
+}
+
+function renderDailyChallenges() {
+  renderDailyTodayList();
+  renderDailyHistory();
+}
+
+function initDailyChallenges() {
+  const addBtn = document.getElementById('daily-add');
+  const nameInput = document.getElementById('daily-name');
+  const weekendInput = document.getElementById('daily-include-weekend');
+
+  if (addBtn && nameInput && weekendInput) {
+    const addChallenge = () => {
+      const name = nameInput.value.trim();
+      const challenge = {
+        id: uid(),
+        name: name || t('daily.defaultName', { index: (appData.dailyChallenges.challenges.length || 0) + 1 }),
+        includeWeekend: weekendInput.checked,
+        createdAt: toISODateString(new Date())
+      };
+      appData.dailyChallenges.challenges.push(challenge);
+      nameInput.value = '';
+      saveData();
+      renderDailyChallenges();
+    };
+
+    addBtn.addEventListener('click', addChallenge);
+    nameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addChallenge();
+      }
+    });
+  }
+
+  renderDailyChallenges();
+}
+
 async function bootstrap() {
   await initData();
   initTabs();
@@ -3116,6 +3472,7 @@ async function bootstrap() {
   initCalendar();
   initMindmap();
   initGantt();
+  initDailyChallenges();
   initTodo();
 }
 
