@@ -28,6 +28,7 @@
       <button class="tab-link" data-target="calendar" data-i18n="tabs.calendar">Agenda</button>
       <button class="tab-link" data-target="mindmap" data-i18n="tabs.mindmap">Cartes mentales</button>
       <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
+      <button class="tab-link" data-target="daily" data-i18n="tabs.daily">Défis Quotidiens</button>
       <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
       <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
     </nav>
@@ -124,6 +125,47 @@
         <button id="add-block" data-i18n="todo.addBlock">Ajouter un bloc</button>
       </div>
       <div class="todo-blocks" id="todo-blocks"></div>
+    </section>
+
+    <section id="daily" class="tab-panel">
+      <div class="daily-layout">
+        <div class="daily-header">
+          <div>
+            <h2 data-i18n="daily.title">Défis quotidiens</h2>
+            <p class="hint" data-i18n="daily.description">
+              Ajoutez des défis à accomplir chaque jour et consultez l'historique.
+            </p>
+          </div>
+          <div class="daily-form">
+            <label class="form-group">
+              <span data-i18n="daily.nameLabel">Nom du défi</span>
+              <input type="text" id="daily-name" data-i18n-placeholder="daily.namePlaceholder" placeholder="Faire du sport" />
+            </label>
+            <label class="daily-toggle">
+              <input type="checkbox" id="daily-include-weekend" checked />
+              <span data-i18n="daily.includeWeekend">Inclure le week-end</span>
+            </label>
+            <button id="daily-add" data-i18n="daily.addChallenge">Ajouter un défi</button>
+          </div>
+        </div>
+
+        <div class="daily-panels">
+          <div class="daily-card">
+            <div class="daily-card__header">
+              <h3 data-i18n="daily.todayTitle">Défis du jour</h3>
+              <span class="hint" data-i18n="daily.completionLegend"></span>
+            </div>
+            <div id="daily-today-list" class="daily-today-list"></div>
+          </div>
+
+          <div class="daily-card">
+            <div class="daily-card__header">
+              <h3 data-i18n="daily.historyTitle">Historique des derniers jours</h3>
+            </div>
+            <div id="daily-history" class="daily-history"></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section id="gantt" class="tab-panel">
