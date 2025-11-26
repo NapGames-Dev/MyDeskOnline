@@ -28,6 +28,7 @@
       <button class="tab-link" data-target="calendar" data-i18n="tabs.calendar">Agenda</button>
       <button class="tab-link" data-target="mindmap" data-i18n="tabs.mindmap">Cartes mentales</button>
       <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
+      <button class="tab-link" data-target="notes" data-i18n="tabs.notes">Notes</button>
       <button class="tab-link" data-target="daily" data-i18n="tabs.daily">Défis Quotidiens</button>
       <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
       <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
@@ -125,6 +126,59 @@
         <button id="add-block" data-i18n="todo.addBlock">Ajouter un bloc</button>
       </div>
       <div class="todo-blocks" id="todo-blocks"></div>
+    </section>
+
+    <section id="notes" class="tab-panel">
+      <div class="notes-layout">
+        <aside class="notes-sidebar">
+          <div class="notes-sidebar__header">
+            <h3 data-i18n="notes.title">Notes</h3>
+            <button id="notes-add-page" data-i18n="notes.addPage">Nouvelle page</button>
+          </div>
+          <div class="notes-page-list" id="notes-page-list"></div>
+          <div class="notes-sidebar__actions">
+            <button id="notes-rename-page" data-i18n="notes.renamePage">Renommer</button>
+            <button id="notes-delete-page" data-i18n="notes.deletePage">Supprimer</button>
+          </div>
+        </aside>
+        <div class="notes-editor">
+          <div class="notes-toolbar" aria-label="Barre d'outils de mise en forme">
+            <button type="button" class="notes-tool" data-command="bold" data-i18n="notes.toolbar.bold" title="Gras">Gras</button>
+            <button type="button" class="notes-tool" data-command="italic" data-i18n="notes.toolbar.italic" title="Italique">Italique</button>
+            <button type="button" class="notes-tool" data-command="underline" data-i18n="notes.toolbar.underline" title="Souligner">Souligner</button>
+            <button type="button" class="notes-tool" data-command="strikeThrough" data-i18n="notes.toolbar.strike" title="Barré">Barré</button>
+            <button type="button" class="notes-tool" data-command="insertUnorderedList" data-i18n="notes.toolbar.bullet" title="Puces">Puces</button>
+            <button type="button" class="notes-tool" data-command="insertOrderedList" data-i18n="notes.toolbar.numbered" title="Liste numérotée">Liste numérotée</button>
+            <label class="notes-tool notes-tool--picker">
+              <span data-i18n="notes.toolbar.fontSize">Taille</span>
+              <select id="notes-font-size">
+                <option value="2">12px</option>
+                <option value="3" selected>16px</option>
+                <option value="4">18px</option>
+                <option value="5">24px</option>
+                <option value="6">32px</option>
+                <option value="7">48px</option>
+              </select>
+            </label>
+            <label class="notes-tool notes-tool--picker">
+              <span data-i18n="notes.toolbar.textColor">Couleur</span>
+              <input type="color" id="notes-text-color" value="#111827" aria-label="Couleur du texte" />
+            </label>
+            <label class="notes-tool notes-tool--picker">
+              <span data-i18n="notes.toolbar.highlight">Surligner</span>
+              <input type="color" id="notes-highlight" value="#fef08a" aria-label="Couleur de surlignage" />
+            </label>
+          </div>
+          <div
+            class="notes-editor__content"
+            id="notes-editor"
+            contenteditable="true"
+            data-i18n-placeholder="notes.placeholder"
+            data-placeholder="Commencez à écrire..."
+          ></div>
+          <p class="hint" data-i18n="notes.hint">Ajoutez plusieurs pages et mettez vos notes en forme.</p>
+        </div>
+      </div>
     </section>
 
     <section id="daily" class="tab-panel">
