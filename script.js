@@ -14,6 +14,10 @@ const defaultData = {
   todo: {
     blocks: []
   },
+  notes: {
+    pages: [],
+    activePageId: null
+  },
   dailyChallenges: {
     challenges: [],
     completions: {}
@@ -27,6 +31,7 @@ const defaultData = {
       calendar: true,
       mindmap: true,
       todo: true,
+      notes: true,
       daily: true,
       gantt: true,
       trackirigo: true
@@ -38,6 +43,7 @@ const OPTIONAL_TABS = [
   { id: 'calendar', labelKey: 'tabs.calendar' },
   { id: 'mindmap', labelKey: 'tabs.mindmap' },
   { id: 'todo', labelKey: 'tabs.todo' },
+  { id: 'notes', labelKey: 'tabs.notes' },
   { id: 'daily', labelKey: 'tabs.daily' },
   { id: 'gantt', labelKey: 'tabs.gantt' },
   { id: 'trackirigo', labelKey: 'tabs.track' }
@@ -93,6 +99,7 @@ const translations = {
       calendar: 'Agenda',
       mindmap: 'Cartes mentales',
       todo: 'To Do List',
+      notes: 'Notes',
       daily: 'Défis Quotidiens',
       gantt: 'GANTT',
       track: "Track'Irigo"
@@ -197,6 +204,30 @@ const translations = {
       defaultItemName: 'Tâche {index}',
       defaultBlockName: 'Bloc {index}'
     },
+    notes: {
+      title: 'Notes',
+      addPage: 'Nouvelle page',
+      renamePage: 'Renommer',
+      deletePage: 'Supprimer',
+      newPagePrompt: 'Nom de la nouvelle page',
+      renamePagePrompt: 'Nouveau nom de la page',
+      deleteConfirm: 'Supprimer la page "{name}" ?',
+      lastPageAlert: 'Impossible de supprimer la dernière page.',
+      defaultPageName: 'Page {index}',
+      hint: 'Ajoutez plusieurs pages et mettez vos notes en forme.',
+      placeholder: 'Commencez à écrire...',
+      toolbar: {
+        bold: 'Gras',
+        italic: 'Italique',
+        underline: 'Souligner',
+        strike: 'Barré',
+        bullet: 'Puces',
+        numbered: 'Numérotée',
+        fontSize: 'Taille',
+        textColor: 'Couleur',
+        highlight: 'Surligner'
+      }
+    },
     gantt: {
       sidebarTitle: 'Schémas GANTT',
       addChart: 'Nouveau schéma',
@@ -269,6 +300,7 @@ const translations = {
       calendar: 'Calendar',
       mindmap: 'Mind Maps',
       todo: 'To-Do List',
+      notes: 'Notes',
       daily: 'Daily Challenges',
       gantt: 'GANTT',
       track: "Track'Irigo"
@@ -373,6 +405,30 @@ const translations = {
       defaultItemName: 'Task {index}',
       defaultBlockName: 'Block {index}'
     },
+    notes: {
+      title: 'Notes',
+      addPage: 'New page',
+      renamePage: 'Rename',
+      deletePage: 'Delete',
+      newPagePrompt: 'New page name',
+      renamePagePrompt: 'Rename page',
+      deleteConfirm: 'Delete the page "{name}"?',
+      lastPageAlert: 'You need at least one page.',
+      defaultPageName: 'Page {index}',
+      hint: 'Create multiple pages and format your notes.',
+      placeholder: 'Start typing...',
+      toolbar: {
+        bold: 'Bold',
+        italic: 'Italic',
+        underline: 'Underline',
+        strike: 'Strikethrough',
+        bullet: 'Bulleted',
+        numbered: 'Numbered',
+        fontSize: 'Size',
+        textColor: 'Color',
+        highlight: 'Highlight'
+      }
+    },
     gantt: {
       sidebarTitle: 'GANTT charts',
       addChart: 'New chart',
@@ -445,6 +501,7 @@ const translations = {
       calendar: 'Lịch',
       mindmap: 'Sơ đồ tư duy',
       todo: 'Danh sách công việc',
+      notes: 'Ghi chú',
       daily: 'Thử thách hằng ngày',
       gantt: 'GANTT',
       track: "Track'Irigo"
@@ -548,6 +605,30 @@ const translations = {
       newTask: 'Công việc mới',
       defaultItemName: 'Công việc {index}',
       defaultBlockName: 'Khối {index}'
+    },
+    notes: {
+      title: 'Ghi chú',
+      addPage: 'Trang mới',
+      renamePage: 'Đổi tên',
+      deletePage: 'Xóa',
+      newPagePrompt: 'Tên trang mới',
+      renamePagePrompt: 'Đổi tên trang',
+      deleteConfirm: 'Xóa trang "{name}"?',
+      lastPageAlert: 'Cần ít nhất một trang.',
+      defaultPageName: 'Trang {index}',
+      hint: 'Tạo nhiều trang và định dạng ghi chú của bạn.',
+      placeholder: 'Bắt đầu nhập...',
+      toolbar: {
+        bold: 'Đậm',
+        italic: 'Nghiêng',
+        underline: 'Gạch dưới',
+        strike: 'Gạch ngang',
+        bullet: 'Gạch đầu dòng',
+        numbered: 'Đánh số',
+        fontSize: 'Cỡ chữ',
+        textColor: 'Màu chữ',
+        highlight: 'Tô sáng'
+      }
     },
     gantt: {
       sidebarTitle: 'Sơ đồ GANTT',
@@ -730,7 +811,9 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
     const key = element.getAttribute('data-i18n-placeholder');
     if (key) {
-      element.setAttribute('placeholder', t(key));
+      const value = t(key);
+      element.setAttribute('placeholder', value);
+      element.setAttribute('data-placeholder', value);
     }
   });
   document.querySelectorAll('[data-i18n-title]').forEach((element) => {
@@ -928,19 +1011,23 @@ function loadFromLocalStorage() {
         ...cloneDefault().calendar,
         ...(parsed.calendar ? parsed.calendar : {})
       },
-      mindmap: {
-        ...cloneDefault().mindmap,
-        ...(parsed.mindmap ? parsed.mindmap : {})
-      },
-      todo: {
-        ...cloneDefault().todo,
-        ...(parsed.todo ? parsed.todo : {})
-      },
-      dailyChallenges: {
-        ...cloneDefault().dailyChallenges,
-        ...(parsed.dailyChallenges ? parsed.dailyChallenges : {})
-      },
-      gantt: {
+        mindmap: {
+          ...cloneDefault().mindmap,
+          ...(parsed.mindmap ? parsed.mindmap : {})
+        },
+        todo: {
+          ...cloneDefault().todo,
+          ...(parsed.todo ? parsed.todo : {})
+        },
+        notes: {
+          ...cloneDefault().notes,
+          ...(parsed.notes ? parsed.notes : {})
+        },
+        dailyChallenges: {
+          ...cloneDefault().dailyChallenges,
+          ...(parsed.dailyChallenges ? parsed.dailyChallenges : {})
+        },
+        gantt: {
         ...cloneDefault().gantt,
         ...(parsed.gantt ? parsed.gantt : {})
       }
@@ -1141,6 +1228,30 @@ function migrateData() {
     };
   });
 
+  if (!appData.notes || typeof appData.notes !== 'object') {
+    appData.notes = cloneDefault().notes;
+  }
+
+  if (!Array.isArray(appData.notes.pages)) {
+    appData.notes.pages = [];
+  }
+
+  appData.notes.pages = appData.notes.pages.map((page, index) => ({
+    id: page && page.id ? page.id : uid(),
+    name: page && page.name ? page.name : t('notes.defaultPageName', { index: index + 1 }),
+    content: page && typeof page.content === 'string' ? page.content : ''
+  }));
+
+  if (appData.notes.pages.length === 0) {
+    const defaultPage = { id: uid(), name: t('notes.defaultPageName', { index: 1 }), content: '' };
+    appData.notes.pages.push(defaultPage);
+    appData.notes.activePageId = defaultPage.id;
+  }
+
+  if (!appData.notes.activePageId || !appData.notes.pages.some((page) => page.id === appData.notes.activePageId)) {
+    appData.notes.activePageId = appData.notes.pages[0].id;
+  }
+
   if (!appData.dailyChallenges || typeof appData.dailyChallenges !== 'object') {
     appData.dailyChallenges = cloneDefault().dailyChallenges;
   }
@@ -1267,6 +1378,10 @@ async function initData() {
       todo: {
         ...cloneDefault().todo,
         ...(fileData.todo ? fileData.todo : appData.todo)
+      },
+      notes: {
+        ...cloneDefault().notes,
+        ...(fileData.notes ? fileData.notes : appData.notes)
       },
       dailyChallenges: {
         ...cloneDefault().dailyChallenges,
@@ -1578,6 +1693,10 @@ function initStorageControls() {
           ...cloneDefault().todo,
           ...(imported.todo ? imported.todo : {})
         },
+        notes: {
+          ...cloneDefault().notes,
+          ...(imported.notes ? imported.notes : {})
+        },
         dailyChallenges: {
           ...cloneDefault().dailyChallenges,
           ...(imported.dailyChallenges ? imported.dailyChallenges : {})
@@ -1602,6 +1721,7 @@ function initStorageControls() {
       renderEventTypes();
       renderMindmapList();
       renderMindmap();
+      renderNotes();
       renderTodo();
       renderTabVisibilitySettings();
       applyTabVisibility();
@@ -3212,6 +3332,180 @@ function createTodoItemElement(block, item) {
   return itemEl;
 }
 
+function getNotesEditorElement() {
+  return document.getElementById('notes-editor');
+}
+
+function getActiveNotePage() {
+  if (!appData.notes || !Array.isArray(appData.notes.pages)) return null;
+  return appData.notes.pages.find((page) => page.id === appData.notes.activePageId) || null;
+}
+
+function syncActiveNoteContent() {
+  const editor = getNotesEditorElement();
+  const activePage = getActiveNotePage();
+  if (!editor || !activePage) return;
+  activePage.content = editor.innerHTML;
+}
+
+function renderNotesList() {
+  const list = document.getElementById('notes-page-list');
+  if (!list) return;
+  list.innerHTML = '';
+
+  appData.notes.pages.forEach((page) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'notes-page-item';
+    if (page.id === appData.notes.activePageId) {
+      button.classList.add('active');
+    }
+    const fallbackName = t('notes.defaultPageName', { index: appData.notes.pages.indexOf(page) + 1 });
+    button.textContent = page.name || fallbackName;
+    button.addEventListener('click', () => {
+      setActiveNotePage(page.id);
+    });
+    list.appendChild(button);
+  });
+}
+
+function renderNotesEditor() {
+  const editor = getNotesEditorElement();
+  if (!editor) return;
+  const activePage = getActiveNotePage();
+  editor.innerHTML = activePage && typeof activePage.content === 'string' ? activePage.content : '';
+}
+
+function renderNotes() {
+  renderNotesList();
+  renderNotesEditor();
+}
+
+function setActiveNotePage(pageId) {
+  if (!appData.notes.pages.some((page) => page.id === pageId)) return;
+  syncActiveNoteContent();
+  appData.notes.activePageId = pageId;
+  renderNotes();
+  saveData();
+}
+
+function addNotePage() {
+  syncActiveNoteContent();
+  const name = prompt(t('notes.newPagePrompt'), t('notes.defaultPageName', { index: appData.notes.pages.length + 1 }));
+  const trimmed = name && name.trim();
+  const page = {
+    id: uid(),
+    name: trimmed || t('notes.defaultPageName', { index: appData.notes.pages.length + 1 }),
+    content: ''
+  };
+  appData.notes.pages.push(page);
+  appData.notes.activePageId = page.id;
+  renderNotes();
+  saveData();
+  const editor = getNotesEditorElement();
+  if (editor) {
+    editor.focus();
+  }
+}
+
+function renameNotePage() {
+  const activePage = getActiveNotePage();
+  if (!activePage) return;
+  const name = prompt(t('notes.renamePagePrompt'), activePage.name);
+  if (name === null) return;
+  activePage.name = name.trim() || activePage.name || t('notes.defaultPageName', { index: 1 });
+  renderNotesList();
+  saveData();
+}
+
+function deleteNotePage() {
+  if (appData.notes.pages.length <= 1) {
+    alert(t('notes.lastPageAlert'));
+    return;
+  }
+  const activePage = getActiveNotePage();
+  if (!activePage) return;
+  if (!confirm(t('notes.deleteConfirm', { name: activePage.name || '' }))) return;
+  appData.notes.pages = appData.notes.pages.filter((page) => page.id !== activePage.id);
+  appData.notes.activePageId = appData.notes.pages[0].id;
+  renderNotes();
+  saveData();
+}
+
+function applyNotesCommand(command, value = null) {
+  const editor = getNotesEditorElement();
+  if (!editor) return;
+  editor.focus();
+  document.execCommand('styleWithCSS', false, true);
+  document.execCommand(command, false, value);
+  syncActiveNoteContent();
+  saveData();
+}
+
+function initNotesToolbar() {
+  const editor = getNotesEditorElement();
+  const toolbarButtons = document.querySelectorAll('.notes-tool[data-command]');
+  toolbarButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const command = button.getAttribute('data-command');
+      if (command) {
+        applyNotesCommand(command);
+      }
+    });
+  });
+
+  const fontSize = document.getElementById('notes-font-size');
+  if (fontSize) {
+    fontSize.addEventListener('change', () => {
+      applyNotesCommand('fontSize', fontSize.value);
+    });
+  }
+
+  const textColor = document.getElementById('notes-text-color');
+  if (textColor) {
+    textColor.addEventListener('change', () => {
+      applyNotesCommand('foreColor', textColor.value);
+    });
+  }
+
+  const highlight = document.getElementById('notes-highlight');
+  if (highlight) {
+    highlight.addEventListener('change', () => {
+      if (document.queryCommandSupported('hiliteColor')) {
+        applyNotesCommand('hiliteColor', highlight.value);
+      } else {
+        applyNotesCommand('backColor', highlight.value);
+      }
+    });
+  }
+
+  if (editor) {
+    editor.addEventListener('input', () => {
+      syncActiveNoteContent();
+      saveData();
+    });
+  }
+}
+
+function initNotes() {
+  const addBtn = document.getElementById('notes-add-page');
+  const renameBtn = document.getElementById('notes-rename-page');
+  const deleteBtn = document.getElementById('notes-delete-page');
+
+  if (addBtn) {
+    addBtn.addEventListener('click', addNotePage);
+  }
+  if (renameBtn) {
+    renameBtn.addEventListener('click', renameNotePage);
+  }
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', deleteNotePage);
+  }
+
+  initNotesToolbar();
+  renderNotes();
+}
+
 function isChallengeActiveForDate(challenge, date) {
   if (!challenge || !(date instanceof Date)) return false;
   const created = parseDateOnly(challenge.createdAt);
@@ -3472,6 +3766,7 @@ async function bootstrap() {
   initCalendar();
   initMindmap();
   initGantt();
+  initNotes();
   initDailyChallenges();
   initTodo();
 }
