@@ -31,6 +31,7 @@
       <button class="tab-link" data-target="notes" data-i18n="tabs.notes">Notes</button>
       <button class="tab-link" data-target="daily" data-i18n="tabs.daily">Défis Quotidiens</button>
       <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
+      <button class="tab-link" data-target="snake" data-i18n="tabs.snake">Snake</button>
       <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
     </nav>
   </header>
@@ -256,6 +257,40 @@
               </div>
               <div class="gantt-timeline" id="gantt-timeline"></div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="snake" class="tab-panel">
+      <div class="snake-layout">
+        <div class="snake-header">
+          <div>
+            <h2 data-i18n="snake.title">Snake</h2>
+            <p class="hint" data-i18n="snake.subtitle">Attrapez les pommes et évitez les collisions.</p>
+          </div>
+          <div class="snake-controls">
+            <button id="snake-start" data-i18n="snake.start">Démarrer</button>
+            <button id="snake-pause" data-i18n="snake.pause">Pause</button>
+            <button id="snake-reset" data-i18n="snake.reset">Réinitialiser</button>
+          </div>
+        </div>
+        <div class="snake-panel">
+          <div class="snake-board">
+            <canvas id="snake-canvas" width="420" height="420" role="img" aria-label="Snake"></canvas>
+          </div>
+          <div class="snake-sidebar">
+            <div class="snake-scoreboard">
+              <div class="snake-score">
+                <span data-i18n="snake.score">Score</span>
+                <strong id="snake-score">0</strong>
+              </div>
+              <div class="snake-score">
+                <span data-i18n="snake.best">Meilleur score</span>
+                <strong id="snake-best">0</strong>
+              </div>
+            </div>
+            <div id="snake-status" class="snake-status" data-i18n="snake.status.ready">Prêt à jouer</div>
+            <p class="hint" data-i18n="snake.controls">Utilisez les flèches ou ZQSD pour diriger le serpent.</p>
           </div>
         </div>
       </div>
