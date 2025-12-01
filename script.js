@@ -26,6 +26,9 @@ const defaultData = {
     charts: [],
     activeChartId: null
   },
+  snake: {
+    bestScore: 0
+  },
   tabs: {
     visibility: {
       calendar: true,
@@ -34,6 +37,7 @@ const defaultData = {
       notes: true,
       daily: true,
       gantt: true,
+      snake: true,
       trackirigo: true
     }
   }
@@ -46,6 +50,7 @@ const OPTIONAL_TABS = [
   { id: 'notes', labelKey: 'tabs.notes' },
   { id: 'daily', labelKey: 'tabs.daily' },
   { id: 'gantt', labelKey: 'tabs.gantt' },
+  { id: 'snake', labelKey: 'tabs.snake' },
   { id: 'trackirigo', labelKey: 'tabs.track' }
 ];
 
@@ -63,9 +68,12 @@ const GANTT_DAY_WIDTH = 64;
 const VERSION_INDICATOR_ID = 'version-indicator';
 const DEFAULT_VERSION_SOURCE = 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json';
 const LOCAL_VERSION_INFO = {
-  version: '1.6.1',
+  version: '1.7.1',
   versionCheckUrl: 'https://raw.githubusercontent.com/NapGames-Dev/MyDeskOnline/main/version.json'
 };
+const SNAKE_CELL_SIZE = 20;
+const SNAKE_GRID_SIZE = 21;
+const SNAKE_TICK_MS = 140;
 const VERSION_INDICATOR_STATES = {
   loading: 'loading',
   upToDate: 'up-to-date',
@@ -102,6 +110,7 @@ const translations = {
       notes: 'Notes',
       daily: 'Défis Quotidiens',
       gantt: 'GANTT',
+      snake: 'Snake',
       track: "Track'Irigo"
     },
     home: {
@@ -276,6 +285,23 @@ const translations = {
       completionLegend: 'Vert : fait, rouge : manqué, gris : non prévu, bleu : tout réalisé',
       dateColumn: 'Jour'
     },
+    snake: {
+      title: 'Snake',
+      subtitle: 'Attrapez les pommes et évitez les collisions.',
+      start: 'Démarrer',
+      pause: 'Pause',
+      resume: 'Reprendre',
+      reset: 'Réinitialiser',
+      score: 'Score',
+      best: 'Meilleur score',
+      controls: 'Utilisez les flèches ou ZQSD pour diriger le serpent.',
+      status: {
+        ready: 'Prêt à jouer',
+        running: 'En cours...',
+        paused: 'En pause',
+        over: 'Partie terminée !'
+      }
+    },
     track: {
       iframeTitle: "Track'Irigo – Carte Irigo"
     },
@@ -303,6 +329,7 @@ const translations = {
       notes: 'Notes',
       daily: 'Daily Challenges',
       gantt: 'GANTT',
+      snake: 'Snake',
       track: "Track'Irigo"
     },
     home: {
@@ -477,6 +504,23 @@ const translations = {
       completionLegend: 'Green: done, red: missed, grey: not planned, blue: all done',
       dateColumn: 'Day'
     },
+    snake: {
+      title: 'Snake',
+      subtitle: 'Catch apples and avoid crashing into walls or yourself.',
+      start: 'Start',
+      pause: 'Pause',
+      resume: 'Resume',
+      reset: 'Reset',
+      score: 'Score',
+      best: 'Best score',
+      controls: 'Use the arrow keys or WASD to steer the snake.',
+      status: {
+        ready: 'Ready to play',
+        running: 'Running...',
+        paused: 'Paused',
+        over: 'Game over!'
+      }
+    },
     track: {
       iframeTitle: "Track'Irigo – Irigo map"
     },
@@ -504,6 +548,7 @@ const translations = {
       notes: 'Ghi chú',
       daily: 'Thử thách hằng ngày',
       gantt: 'GANTT',
+      snake: 'Rắn',
       track: "Track'Irigo"
     },
     home: {
@@ -678,6 +723,23 @@ const translations = {
       completionLegend: 'Xanh lá: đã làm, đỏ: bỏ lỡ, xám: không áp dụng, xanh dương: hoàn thành tất cả',
       dateColumn: 'Ngày'
     },
+    snake: {
+      title: 'Rắn',
+      subtitle: 'Ăn táo và tránh va chạm vào tường hoặc chính mình.',
+      start: 'Bắt đầu',
+      pause: 'Tạm dừng',
+      resume: 'Tiếp tục',
+      reset: 'Đặt lại',
+      score: 'Điểm',
+      best: 'Điểm cao nhất',
+      controls: 'Dùng các phím mũi tên hoặc WASD để điều khiển rắn.',
+      status: {
+        ready: 'Sẵn sàng chơi',
+        running: 'Đang chơi...',
+        paused: 'Đã tạm dừng',
+        over: 'Thua rồi!'
+      }
+    },
     track: {
       iframeTitle: "Track'Irigo – Bản đồ Irigo"
     },
@@ -712,6 +774,9 @@ let resizeState = null;
 let lastStorageStatus = null;
 let tabLinks = [];
 let activateTabHandler = null;
+let snakeState = null;
+let snakeInterval = null;
+let snakeElements = null;
 
 function cloneDefault() {
   return JSON.parse(JSON.stringify(defaultData));
@@ -743,6 +808,11 @@ function formatTime(date) {
     hour: '2-digit',
     minute: '2-digit'
   });
+}
+
+function getActiveTabId() {
+  const activePanel = document.querySelector('.tab-panel.active');
+  return activePanel ? activePanel.id : null;
 }
 
 function getInitialLanguage() {
@@ -832,6 +902,11 @@ function applyTranslations() {
   const select = document.getElementById('language-select');
   if (select) {
     select.value = currentLanguage;
+  }
+
+  if (snakeState && snakeState.status && snakeElements) {
+    setSnakeStatus(snakeState.status);
+    updateSnakeScores();
   }
 }
 
@@ -1339,6 +1414,14 @@ function migrateData() {
     appData.gantt.activeChartId = appData.gantt.charts[0].id;
   }
 
+  if (!appData.snake || typeof appData.snake !== 'object') {
+    appData.snake = cloneDefault().snake;
+  }
+
+  if (!Number.isFinite(appData.snake.bestScore) || appData.snake.bestScore < 0) {
+    appData.snake.bestScore = 0;
+  }
+
   if (!appData.tabs || typeof appData.tabs !== 'object') {
     appData.tabs = cloneDefault().tabs;
   }
@@ -1409,19 +1492,29 @@ async function initData() {
 function initTabs() {
   tabLinks = Array.from(document.querySelectorAll('.tab-link'));
   const activateTab = (link) => {
+    const previousActivePanel = document.querySelector('.tab-panel.active');
     tabLinks.forEach((l) => l.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach((panel) => panel.classList.remove('active'));
     link.classList.add('active');
-    document.getElementById(link.dataset.target).classList.add('active');
+    const targetId = link.dataset.target;
+    document.getElementById(targetId).classList.add('active');
 
-    if (link.dataset.target === 'calendar') {
+    if (previousActivePanel && previousActivePanel.id === 'snake' && targetId !== 'snake') {
+      pauseSnake(true);
+    }
+
+    if (targetId === 'calendar') {
       requestAnimationFrame(() => {
         renderCalendar();
         renderEventTypes();
       });
-    } else if (link.dataset.target === 'gantt') {
+    } else if (targetId === 'gantt') {
       requestAnimationFrame(() => {
         renderGantt();
+      });
+    } else if (targetId === 'snake') {
+      requestAnimationFrame(() => {
+        drawSnakeBoard();
       });
     }
   };
@@ -3756,6 +3849,259 @@ function initDailyChallenges() {
   renderDailyChallenges();
 }
 
+function updateSnakeScores() {
+  if (!snakeElements || !snakeState) return;
+  const bestScore = Math.max(appData.snake ? appData.snake.bestScore : 0, snakeState.score);
+  snakeElements.score.textContent = snakeState.score;
+  snakeElements.best.textContent = bestScore;
+}
+
+function setSnakeStatus(status) {
+  if (!snakeState || !snakeElements) return;
+  snakeState.status = status;
+  const { status: statusLabel, start } = snakeElements;
+  if (statusLabel) {
+    statusLabel.textContent = t(`snake.status.${status}`);
+    statusLabel.classList.toggle('is-paused', status === 'paused');
+    statusLabel.classList.toggle('is-over', status === 'over');
+  }
+  if (start) {
+    const labelKey = status === 'paused' ? 'snake.resume' : 'snake.start';
+    start.textContent = t(labelKey);
+  }
+}
+
+function placeSnakeFood(segments) {
+  const occupied = new Set(segments.map((segment) => `${segment.x}-${segment.y}`));
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const food = {
+      x: Math.floor(Math.random() * SNAKE_GRID_SIZE),
+      y: Math.floor(Math.random() * SNAKE_GRID_SIZE)
+    };
+    if (!occupied.has(`${food.x}-${food.y}`)) {
+      return food;
+    }
+  }
+  return { x: 0, y: 0 };
+}
+
+function createSnakeState() {
+  const centerX = Math.floor(SNAKE_GRID_SIZE / 2);
+  const centerY = Math.floor(SNAKE_GRID_SIZE / 2);
+  const segments = [
+    { x: centerX, y: centerY },
+    { x: centerX - 1, y: centerY },
+    { x: centerX - 2, y: centerY }
+  ];
+  return {
+    direction: 'right',
+    nextDirection: 'right',
+    segments,
+    food: placeSnakeFood(segments),
+    score: 0,
+    status: 'ready'
+  };
+}
+
+function drawSnakeBoard() {
+  if (!snakeElements || !snakeState) return;
+  const { ctx, canvas } = snakeElements;
+  if (!ctx || !canvas) return;
+
+  ctx.fillStyle = '#020617';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+  for (let i = 0; i <= SNAKE_GRID_SIZE; i++) {
+    const offset = i * SNAKE_CELL_SIZE;
+    ctx.beginPath();
+    ctx.moveTo(offset, 0);
+    ctx.lineTo(offset, canvas.height);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, offset);
+    ctx.lineTo(canvas.width, offset);
+    ctx.stroke();
+  }
+
+  if (snakeState.food) {
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.arc(
+      snakeState.food.x * SNAKE_CELL_SIZE + SNAKE_CELL_SIZE / 2,
+      snakeState.food.y * SNAKE_CELL_SIZE + SNAKE_CELL_SIZE / 2,
+      SNAKE_CELL_SIZE / 2 - 2,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+  }
+
+  snakeState.segments.forEach((segment, index) => {
+    ctx.fillStyle = index === 0 ? '#22c55e' : '#38bdf8';
+    ctx.fillRect(
+      segment.x * SNAKE_CELL_SIZE + 1,
+      segment.y * SNAKE_CELL_SIZE + 1,
+      SNAKE_CELL_SIZE - 2,
+      SNAKE_CELL_SIZE - 2
+    );
+  });
+}
+
+function stopSnakeLoop() {
+  if (snakeInterval) {
+    clearInterval(snakeInterval);
+    snakeInterval = null;
+  }
+}
+
+function endSnakeGame() {
+  stopSnakeLoop();
+  setSnakeStatus('over');
+}
+
+function stepSnake() {
+  if (!snakeState || snakeState.status !== 'running') return;
+  const directionMap = {
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 }
+  };
+
+  snakeState.direction = snakeState.nextDirection;
+  const delta = directionMap[snakeState.direction];
+  const head = snakeState.segments[0];
+  const newHead = { x: head.x + delta.x, y: head.y + delta.y };
+
+  const hitsWall =
+    newHead.x < 0 || newHead.x >= SNAKE_GRID_SIZE || newHead.y < 0 || newHead.y >= SNAKE_GRID_SIZE;
+  const hitsBody = snakeState.segments.some((segment) => segment.x === newHead.x && segment.y === newHead.y);
+
+  if (hitsWall || hitsBody) {
+    endSnakeGame();
+    return;
+  }
+
+  const ateFood = snakeState.food && newHead.x === snakeState.food.x && newHead.y === snakeState.food.y;
+  const nextSegments = [newHead, ...snakeState.segments];
+  if (!ateFood) {
+    nextSegments.pop();
+  }
+
+  snakeState.segments = nextSegments;
+
+  if (ateFood) {
+    snakeState.score += 10;
+    const bestScore = Math.max(appData.snake ? appData.snake.bestScore : 0, snakeState.score);
+    if (bestScore !== (appData.snake ? appData.snake.bestScore : 0)) {
+      appData.snake.bestScore = bestScore;
+      saveData();
+    }
+    snakeState.food = placeSnakeFood(nextSegments);
+  }
+
+  updateSnakeScores();
+  drawSnakeBoard();
+}
+
+function startSnakeLoop() {
+  stopSnakeLoop();
+  snakeInterval = setInterval(stepSnake, SNAKE_TICK_MS);
+}
+
+function startSnakeGame() {
+  if (!snakeState) return;
+  if (snakeState.status === 'over') {
+    snakeState = createSnakeState();
+    updateSnakeScores();
+  }
+  setSnakeStatus('running');
+  startSnakeLoop();
+  drawSnakeBoard();
+}
+
+function pauseSnake() {
+  if (!snakeState || snakeState.status !== 'running') return;
+  stopSnakeLoop();
+  setSnakeStatus('paused');
+}
+
+function resetSnakeGame() {
+  stopSnakeLoop();
+  snakeState = createSnakeState();
+  setSnakeStatus('ready');
+  updateSnakeScores();
+  drawSnakeBoard();
+}
+
+function handleSnakeKeydown(event) {
+  if (getActiveTabId() !== 'snake' || !snakeState) return;
+  const key = event.key.toLowerCase();
+  const mapping = {
+    arrowup: 'up',
+    w: 'up',
+    z: 'up',
+    arrowdown: 'down',
+    s: 'down',
+    arrowleft: 'left',
+    a: 'left',
+    q: 'left',
+    arrowright: 'right',
+    d: 'right'
+  };
+  const direction = mapping[key];
+  if (!direction) return;
+  event.preventDefault();
+  const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' };
+  if (opposite[snakeState.direction] === direction) {
+    return;
+  }
+  snakeState.nextDirection = direction;
+  if (snakeState.status === 'ready' || snakeState.status === 'paused' || snakeState.status === 'over') {
+    startSnakeGame();
+  }
+}
+
+function initSnake() {
+  const canvas = document.getElementById('snake-canvas');
+  const startBtn = document.getElementById('snake-start');
+  const pauseBtn = document.getElementById('snake-pause');
+  const resetBtn = document.getElementById('snake-reset');
+  const scoreLabel = document.getElementById('snake-score');
+  const bestLabel = document.getElementById('snake-best');
+  const statusLabel = document.getElementById('snake-status');
+
+  if (!canvas || !startBtn || !pauseBtn || !resetBtn || !scoreLabel || !bestLabel || !statusLabel) {
+    return;
+  }
+
+  canvas.width = SNAKE_CELL_SIZE * SNAKE_GRID_SIZE;
+  canvas.height = SNAKE_CELL_SIZE * SNAKE_GRID_SIZE;
+  const context = canvas.getContext('2d');
+
+  snakeElements = {
+    canvas,
+    ctx: context,
+    start: startBtn,
+    pause: pauseBtn,
+    reset: resetBtn,
+    score: scoreLabel,
+    best: bestLabel,
+    status: statusLabel
+  };
+
+  startBtn.addEventListener('click', () => startSnakeGame());
+  pauseBtn.addEventListener('click', () => pauseSnake());
+  resetBtn.addEventListener('click', () => resetSnakeGame());
+  document.addEventListener('keydown', handleSnakeKeydown);
+
+  snakeState = createSnakeState();
+  updateSnakeScores();
+  setSnakeStatus('ready');
+  drawSnakeBoard();
+}
+
 async function bootstrap() {
   await initData();
   initTabs();
@@ -3769,6 +4115,7 @@ async function bootstrap() {
   initNotes();
   initDailyChallenges();
   initTodo();
+  initSnake();
 }
 
 if (document.readyState === 'loading') {
