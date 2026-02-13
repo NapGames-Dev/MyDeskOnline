@@ -1061,6 +1061,15 @@ main {
   font: inherit;
 }
 
+
+.daily-form input[type='number'] {
+  width: 110px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font: inherit;
+}
+
 .daily-toggle {
   display: inline-flex;
   align-items: center;
@@ -1118,6 +1127,20 @@ main {
   border-radius: 8px;
   border: 1px solid var(--border);
   font: inherit;
+}
+
+
+.daily-target-input {
+  width: 72px;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font: inherit;
+}
+
+.daily-today-item .meta.is-week-complete {
+  color: #166534;
+  font-weight: 700;
 }
 
 .daily-today-item button {
