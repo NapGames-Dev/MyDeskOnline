@@ -273,6 +273,7 @@ const translations = {
       description: "Ajoutez des défis à accomplir chaque jour et consultez l'historique.",
       nameLabel: 'Nom du défi',
       namePlaceholder: 'Faire du sport',
+      weeklyTargetLabel: 'Objectif hebdomadaire',
       includeWeekend: 'Inclure le week-end',
       addChallenge: 'Ajouter un défi',
       todayTitle: 'Défis du jour',
@@ -283,7 +284,11 @@ const translations = {
       deleteConfirm: 'Supprimer ce défi ?',
       defaultName: 'Défi {index}',
       completionLegend: 'Vert : fait, rouge : manqué, gris : non prévu, bleu : tout réalisé',
-      dateColumn: 'Jour'
+      dateColumn: 'Jour',
+      progressLabel: '{done}/{target} cette semaine',
+      weekComplete: 'Semaine validée',
+      weekInProgress: 'Semaine en cours',
+      timesSuffix: '{count} fois / semaine'
     },
     snake: {
       title: 'Snake',
@@ -492,6 +497,7 @@ const translations = {
       description: 'Add daily challenges, check them off, and track your history.',
       nameLabel: 'Challenge name',
       namePlaceholder: 'Work out',
+      weeklyTargetLabel: 'Weekly target',
       includeWeekend: 'Include weekends',
       addChallenge: 'Add challenge',
       todayTitle: "Today's challenges",
@@ -502,7 +508,11 @@ const translations = {
       deleteConfirm: 'Delete this challenge?',
       defaultName: 'Challenge {index}',
       completionLegend: 'Green: done, red: missed, grey: not planned, blue: all done',
-      dateColumn: 'Day'
+      dateColumn: 'Day',
+      progressLabel: '{done}/{target} this week',
+      weekComplete: 'Week complete',
+      weekInProgress: 'In progress',
+      timesSuffix: '{count} times / week'
     },
     snake: {
       title: 'Snake',
@@ -711,6 +721,7 @@ const translations = {
       description: 'Thêm thử thách mỗi ngày, đánh dấu hoàn thành và xem lịch sử.',
       nameLabel: 'Tên thử thách',
       namePlaceholder: 'Tập thể dục',
+      weeklyTargetLabel: 'Mục tiêu hằng tuần',
       includeWeekend: 'Bao gồm cuối tuần',
       addChallenge: 'Thêm thử thách',
       todayTitle: 'Thử thách hôm nay',
@@ -721,7 +732,11 @@ const translations = {
       deleteConfirm: 'Xóa thử thách này?',
       defaultName: 'Thử thách {index}',
       completionLegend: 'Xanh lá: đã làm, đỏ: bỏ lỡ, xám: không áp dụng, xanh dương: hoàn thành tất cả',
-      dateColumn: 'Ngày'
+      dateColumn: 'Ngày',
+      progressLabel: '{done}/{target} trong tuần này',
+      weekComplete: 'Hoàn thành tuần',
+      weekInProgress: 'Đang thực hiện',
+      timesSuffix: '{count} lần / tuần'
     },
     snake: {
       title: 'Rắn',
@@ -1339,6 +1354,10 @@ function migrateData() {
     id: challenge && challenge.id ? challenge.id : uid(),
     name: challenge && challenge.name ? challenge.name : t('daily.defaultName', { index: index + 1 }),
     includeWeekend: typeof (challenge && challenge.includeWeekend) === 'boolean' ? challenge.includeWeekend : true,
+    weeklyTarget:
+      challenge && Number.isFinite(Number(challenge.weeklyTarget))
+        ? Math.max(1, Math.round(Number(challenge.weeklyTarget)))
+        : 1,
     createdAt:
       challenge && typeof challenge.createdAt === 'string' ? challenge.createdAt : todayISO
   }));
@@ -3625,6 +3644,25 @@ function setChallengeCompletion(challengeId, dateISO, done) {
   appData.dailyChallenges.completions[dateISO][challengeId] = done;
 }
 
+function getChallengeWeekProgress(challenge, referenceDate = new Date()) {
+  const start = startOfWeek(referenceDate);
+  start.setHours(0, 0, 0, 0);
+
+  let done = 0;
+  for (let offset = 0; offset < 7; offset += 1) {
+    const day = new Date(start);
+    day.setDate(start.getDate() + offset);
+    if (!isChallengeActiveForDate(challenge, day)) continue;
+    const dayISO = toISODateString(day);
+    if (isChallengeDone(challenge.id, dayISO)) {
+      done += 1;
+    }
+  }
+
+  const target = Math.max(1, Number(challenge.weeklyTarget) || 1);
+  return { done, target, isComplete: done >= target };
+}
+
 function renderDailyHistory() {
   const container = document.getElementById('daily-history');
   if (!container) return;
@@ -3739,6 +3777,8 @@ function renderDailyTodayList() {
     const item = document.createElement('div');
     item.className = 'daily-today-item';
 
+    const weekProgress = getChallengeWeekProgress(challenge, today);
+
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = isChallengeDone(challenge.id, todayISO);
@@ -3746,7 +3786,7 @@ function renderDailyTodayList() {
     checkbox.addEventListener('change', () => {
       setChallengeCompletion(challenge.id, todayISO, checkbox.checked);
       saveData();
-      renderDailyHistory();
+      renderDailyChallenges();
     });
 
     const nameInput = document.createElement('input');
@@ -3758,6 +3798,31 @@ function renderDailyTodayList() {
       saveData();
       renderDailyHistory();
     });
+
+    const weeklyTargetInput = document.createElement('input');
+    weeklyTargetInput.type = 'number';
+    weeklyTargetInput.className = 'daily-target-input';
+    weeklyTargetInput.min = '1';
+    weeklyTargetInput.step = '1';
+    weeklyTargetInput.value = String(Math.max(1, Number(challenge.weeklyTarget) || 1));
+    weeklyTargetInput.title = t('daily.weeklyTargetLabel');
+    weeklyTargetInput.addEventListener('change', () => {
+      const parsed = Number.parseInt(weeklyTargetInput.value, 10);
+      challenge.weeklyTarget = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+      weeklyTargetInput.value = String(challenge.weeklyTarget);
+      saveData();
+      renderDailyChallenges();
+    });
+
+    const weeklyTargetText = document.createElement('span');
+    weeklyTargetText.className = 'meta';
+    weeklyTargetText.textContent = t('daily.timesSuffix', { count: Math.max(1, Number(challenge.weeklyTarget) || 1) });
+
+    const progress = document.createElement('span');
+    progress.className = `meta ${weekProgress.isComplete ? 'is-week-complete' : ''}`;
+    progress.textContent = `${t('daily.progressLabel', { done: weekProgress.done, target: weekProgress.target })} · ${t(
+      weekProgress.isComplete ? 'daily.weekComplete' : 'daily.weekInProgress'
+    )}`;
 
     const weekendToggle = document.createElement('label');
     weekendToggle.className = 'daily-toggle';
@@ -3796,6 +3861,9 @@ function renderDailyTodayList() {
 
     item.appendChild(checkbox);
     item.appendChild(nameInput);
+    item.appendChild(weeklyTargetInput);
+    item.appendChild(weeklyTargetText);
+    item.appendChild(progress);
     item.appendChild(weekendToggle);
     item.appendChild(deleteBtn);
     if (meta.textContent) {
@@ -3821,18 +3889,22 @@ function initDailyChallenges() {
   const addBtn = document.getElementById('daily-add');
   const nameInput = document.getElementById('daily-name');
   const weekendInput = document.getElementById('daily-include-weekend');
+  const weeklyTargetInput = document.getElementById('daily-weekly-target');
 
-  if (addBtn && nameInput && weekendInput) {
+  if (addBtn && nameInput && weekendInput && weeklyTargetInput) {
     const addChallenge = () => {
       const name = nameInput.value.trim();
+      const weeklyTarget = Math.max(1, Number.parseInt(weeklyTargetInput.value, 10) || 1);
       const challenge = {
         id: uid(),
         name: name || t('daily.defaultName', { index: (appData.dailyChallenges.challenges.length || 0) + 1 }),
         includeWeekend: weekendInput.checked,
+        weeklyTarget,
         createdAt: toISODateString(new Date())
       };
       appData.dailyChallenges.challenges.push(challenge);
       nameInput.value = '';
+      weeklyTargetInput.value = String(weeklyTarget);
       saveData();
       renderDailyChallenges();
     };
