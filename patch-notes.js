@@ -12,6 +12,13 @@ const PATCH_NOTES_SEEN_KEY = 'mydesk-patchnotes-seen';
 // area : app | sync | calendar | anki | sport | news | todo | menu | snake
 const PATCH_NOTES = [
   {
+    date: '2026-10-17',
+    title: 'Plus de cartes quand il le faut',
+    items: [
+      { area: 'anki', text: 'Révisions : quand la limite de nouvelles cartes du jour est atteinte, « Étudier plus aujourd’hui » (dans l’aperçu du paquet et à la fin de la séance) ajoute le nombre de nouvelles cartes voulu, pour ce paquet et pour aujourd’hui seulement. Demain, la limite normale revient.' }
+    ]
+  },
+  {
     date: '2026-10-09',
     title: 'Heure des sources',
     items: [

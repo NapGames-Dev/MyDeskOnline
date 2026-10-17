@@ -200,6 +200,10 @@ const ANKI_TRANSLATIONS = {
     retention: 'Rétention visée',
     retentionHelp: 'Probabilité de te souvenir d’une carte au moment où elle revient. 0,90 est la valeur par défaut d’Anki. Plus haut = intervalles plus courts et beaucoup plus de révisions (la charge grimpe très vite au-delà de 0,95).',
     newPerDay: 'Nouvelles cartes par jour',
+    moreNewInfo: 'Limite du jour atteinte : {left} nouvelle(s) carte(s) en attente dans ce paquet.',
+    moreNewLabel: 'Étudier plus aujourd’hui',
+    moreNewButton: 'Ajouter',
+    moreNewDone: '+{count} nouvelle(s) carte(s) ajoutée(s) pour aujourd’hui dans ce paquet.',
     reviewsPerDay: 'Révisions maximum par jour',
     learningSteps: 'Étapes d’apprentissage',
     relearningSteps: 'Étapes de réapprentissage',
@@ -416,6 +420,10 @@ const ANKI_TRANSLATIONS = {
     retention: 'Desired retention',
     retentionHelp: 'Probability of remembering a card when it comes back. 0.90 is Anki’s default. Higher = shorter intervals and many more reviews (workload rises very fast above 0.95).',
     newPerDay: 'New cards per day',
+    moreNewInfo: 'Daily limit reached: {left} new card(s) waiting in this deck.',
+    moreNewLabel: 'Study more today',
+    moreNewButton: 'Add',
+    moreNewDone: '+{count} new card(s) added for today in this deck.',
     reviewsPerDay: 'Maximum reviews per day',
     learningSteps: 'Learning steps',
     relearningSteps: 'Relearning steps',
@@ -1043,7 +1051,10 @@ function ankiQueue(deckId) {
     newQueue.push(card);
   });
 
-  const newLeft = Math.max(0, Math.round(Number(settings.newPerDay) || 0) - newDone);
+  // « Étudier plus aujourd'hui » : rallonge valable pour ce paquet, ce jour seulement.
+  const queueDeck = deckId ? ankiGetDeck(deckId) : null;
+  const extraNew = queueDeck && queueDeck.extraNew && queueDeck.extraNew.day === dayStart ? Number(queueDeck.extraNew.count) || 0 : 0;
+  const newLeft = Math.max(0, Math.round(Number(settings.newPerDay) || 0) + extraNew - newDone);
   const reviewLeft = Math.max(0, Math.round(Number(settings.reviewsPerDay) || 0) - reviewDone);
   return {
     learningNow,
@@ -1052,6 +1063,7 @@ function ankiQueue(deckId) {
     news: newQueue.slice(0, newLeft),
     newDone,
     reviewDone,
+    newWaiting: Math.max(0, newQueue.length - newLeft),
     counts: {
       new: Math.min(newQueue.length, newLeft),
       learn: learningNow.length + learningLater.length,
@@ -1662,6 +1674,7 @@ function renderAnkiOverview(main) {
     card.appendChild(ankiEl('p', 'anki-muted', t('anki.overviewEmpty')));
     ankiAppendLearningInfo(card, queue);
   }
+  ankiAppendMoreNew(card, deck.id, queue);
   actions.append(
     ankiButton('anki-btn anki-btn--ghost', t('anki.navAdd'), () => {
       ankiEditNoteId = null;
@@ -1696,6 +1709,35 @@ function ankiAppendLearningInfo(container, queue) {
       })
     );
   }
+}
+
+// Limite de nouvelles cartes atteinte : en ajouter pour aujourd'hui, dans ce paquet.
+function ankiAppendMoreNew(container, deckId, queue) {
+  const deck = ankiGetDeck(deckId);
+  if (!deck || !queue.newWaiting) return;
+  const box = ankiEl('div', 'anki-field');
+  box.appendChild(ankiEl('span', 'anki-field__label', t('anki.moreNewLabel')));
+  box.appendChild(ankiEl('p', 'anki-muted', t('anki.moreNewInfo', { left: queue.newWaiting })));
+  const input = ankiEl('input');
+  input.type = 'number';
+  input.min = '1';
+  input.max = String(queue.newWaiting);
+  input.inputMode = 'numeric';
+  input.value = String(Math.min(20, queue.newWaiting));
+  const add = ankiButton('anki-btn', t('anki.moreNewButton'), () => {
+    const count = Math.min(queue.newWaiting, Math.round(Number(input.value) || 0));
+    if (count < 1) return;
+    const dayStart = ankiDayStart();
+    const same = deck.extraNew && deck.extraNew.day === dayStart ? Number(deck.extraNew.count) || 0 : 0;
+    deck.extraNew = { day: dayStart, count: same + count };
+    saveData();
+    renderAnki();
+    ankiStatus(t('anki.moreNewDone', { count }), 'success');
+  });
+  const row = ankiEl('div', 'anki-actions');
+  row.append(input, add);
+  box.appendChild(row);
+  container.appendChild(box);
 }
 
 /* ── Révision ──────────────────────────────────────────────── */
@@ -1835,6 +1877,7 @@ function renderAnkiDone(main) {
   const card = ankiEl('div', 'anki-card anki-done');
   card.appendChild(ankiEl('h2', 'anki-title', t('anki.doneTitle')));
   ankiAppendLearningInfo(card, queue);
+  ankiAppendMoreNew(card, ankiDeckId, queue);
   const tomorrowEnd = ankiAddDays(ankiDayEnd(), 1);
   const family = ankiDeckId ? ankiDeckFamily(ankiDeckId) : null;
   const notes = ankiNoteMap();
