@@ -200,6 +200,11 @@ const ANKI_TRANSLATIONS = {
     retention: 'Rétention visée',
     retentionHelp: 'Probabilité de te souvenir d’une carte au moment où elle revient. 0,90 est la valeur par défaut d’Anki. Plus haut = intervalles plus courts et beaucoup plus de révisions (la charge grimpe très vite au-delà de 0,95).',
     newPerDay: 'Nouvelles cartes par jour',
+    shuffle: '🔀 Mélanger',
+    shuffleAgain: '🔀 Mélanger à nouveau',
+    shuffleOff: 'Remettre dans l’ordre',
+    shuffleOn: 'Cartes mélangées dans ce paquet (nouvelles et révisions).',
+    shuffleOffDone: 'Ordre d’origine rétabli.',
     moreNewInfo: 'Limite du jour atteinte : {left} nouvelle(s) carte(s) en attente dans ce paquet.',
     moreNewLabel: 'Étudier plus aujourd’hui',
     moreNewButton: 'Ajouter',
@@ -420,6 +425,11 @@ const ANKI_TRANSLATIONS = {
     retention: 'Desired retention',
     retentionHelp: 'Probability of remembering a card when it comes back. 0.90 is Anki’s default. Higher = shorter intervals and many more reviews (workload rises very fast above 0.95).',
     newPerDay: 'New cards per day',
+    shuffle: '🔀 Shuffle',
+    shuffleAgain: '🔀 Shuffle again',
+    shuffleOff: 'Back to original order',
+    shuffleOn: 'Cards shuffled in this deck (new and reviews).',
+    shuffleOffDone: 'Original order restored.',
     moreNewInfo: 'Daily limit reached: {left} new card(s) waiting in this deck.',
     moreNewLabel: 'Study more today',
     moreNewButton: 'Add',
@@ -983,6 +993,16 @@ function ankiNoteMap() {
   return new Map(ankiData().notes.map((note) => [note.id, note]));
 }
 
+function ankiShuffleKey(id, seed) {
+  let h = 2166136261 ^ (Number(seed) || 1);
+  const text = String(id);
+  for (let i = 0; i < text.length; i += 1) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  h ^= h >>> 15;
+  h = Math.imul(h, 2246822507);
+  h ^= h >>> 13;
+  return h >>> 0;
+}
+
 function ankiQueue(deckId) {
   const data = ankiData();
   const settings = data.settings;
@@ -1034,6 +1054,16 @@ function ankiQueue(deckId) {
   learningLater.sort((a, b) => a.due - b.due);
   reviews.sort((a, b) => a.due - b.due);
   news.sort((a, b) => a.created - b.created || a.ord - b.ord);
+
+  // Paquet « mélangé » : ordre aléatoire mais stable (même graine = même ordre).
+  const shuffleDeck = deckId ? ankiGetDeck(deckId) : null;
+  if (shuffleDeck && shuffleDeck.shuffle) {
+    const key = new Map();
+    [...news, ...reviews].forEach((card) => key.set(card.id, ankiShuffleKey(card.id, shuffleDeck.shuffle)));
+    const byKey = (a, b) => key.get(a.id) - key.get(b.id);
+    news.sort(byKey);
+    reviews.sort(byKey);
+  }
 
   const bury = settings.burySiblings;
   const reviewQueue = [];
@@ -1675,7 +1705,24 @@ function renderAnkiOverview(main) {
     ankiAppendLearningInfo(card, queue);
   }
   ankiAppendMoreNew(card, deck.id, queue);
+  if (deck.shuffle) card.appendChild(ankiEl('p', 'anki-muted', t('anki.shuffleOn')));
   actions.append(
+    ankiButton('anki-btn anki-btn--ghost', t(deck.shuffle ? 'anki.shuffleAgain' : 'anki.shuffle'), () => {
+      deck.shuffle = Date.now();
+      saveData();
+      renderAnki();
+      ankiStatus(t('anki.shuffleOn'), 'success');
+    }),
+    ...(deck.shuffle
+      ? [
+          ankiButton('anki-btn anki-btn--ghost', t('anki.shuffleOff'), () => {
+            delete deck.shuffle;
+            saveData();
+            renderAnki();
+            ankiStatus(t('anki.shuffleOffDone'), 'success');
+          })
+        ]
+      : []),
     ankiButton('anki-btn anki-btn--ghost', t('anki.navAdd'), () => {
       ankiEditNoteId = null;
       // Ajout depuis un paquet : ce paquet, sans le tag d'un autre.

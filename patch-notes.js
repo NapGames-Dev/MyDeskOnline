@@ -15,6 +15,7 @@ const PATCH_NOTES = [
     date: '2026-10-17',
     title: 'Plus de cartes quand il le faut',
     items: [
+      { area: 'anki', text: 'Révisions : bouton « 🔀 Mélanger » dans l’aperçu d’un paquet — les cartes (nouvelles et révisions) arrivent dans un ordre aléatoire au lieu de l’ordre du paquet. Ordre stable pendant la séance ; « Mélanger à nouveau » le change, « Remettre dans l’ordre » l’annule.' },
       { area: 'anki', text: 'Révisions : quand la limite de nouvelles cartes du jour est atteinte, « Étudier plus aujourd’hui » (dans l’aperçu du paquet et à la fin de la séance) ajoute le nombre de nouvelles cartes voulu, pour ce paquet et pour aujourd’hui seulement. Demain, la limite normale revient.' }
     ]
   },
