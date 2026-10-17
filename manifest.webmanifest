@@ -1,0 +1,28 @@
+{
+  "id": "./",
+  "name": "MyDesk Online",
+  "short_name": "MyDesk",
+  "description": "Agenda, notes, to-do, sport, menus et plus, synchronisés entre vos appareils.",
+  "lang": "fr",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#f4f6fb",
+  "theme_color": "#4e73df",
+  "categories": ["productivity", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Agenda", "url": "./?tab=calendar", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Sport", "url": "./?tab=sport", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Menu", "url": "./?tab=menutool", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Révisions", "url": "./?tab=anki", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "To Do List", "url": "./?tab=todo", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

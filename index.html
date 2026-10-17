@@ -2,13 +2,21 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title data-i18n="app.title">MyDesk Online - By Nap</title>
-  <link rel="icon" type="image/png" href="MyDeskOnlineLogo.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#4e73df">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MyDesk">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link id="theme-font-link" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=92">
 </head>
 <body>
   <header class="app-header">
@@ -22,7 +30,12 @@
         </select>
       </div>
       <a href="https://github.com/NapGames-Dev/MyDeskOnline/tree/main"><button id="version-indicator" class="version-indicator" type="button" aria-live="polite" data-i18n="version.checking">Vérification...</button></a>
-      <h1 data-i18n="app.title">MyDesk Online - By Nap</h1>
+      <h1><span class="app-header__long-title" data-i18n="app.title">MyDesk Online - By Nap</span><span class="app-header__short-title">MyDesk</span></h1>
+      <button type="button" id="install-button" class="install-button" data-i18n="install.button" data-i18n-title="install.buttonTitle" hidden>📲 Installer</button>
+      <div class="undo-controls">
+        <button type="button" id="undo-button" class="undo-control" data-i18n-title="undo.undoShortcut" data-i18n-aria-label="undo.undoShortcut" disabled>↶</button>
+        <button type="button" id="redo-button" class="undo-control" data-i18n-title="undo.redoShortcut" data-i18n-aria-label="undo.redoShortcut" disabled>↷</button>
+      </div>
     </div>
     <nav class="tab-bar">
       <button class="tab-link active" data-target="home" data-i18n="tabs.home">Accueil</button>
@@ -31,14 +44,30 @@
       <button class="tab-link" data-target="todo" data-i18n="tabs.todo">To Do List</button>
       <button class="tab-link" data-target="notes" data-i18n="tabs.notes">Notes</button>
       <button class="tab-link" data-target="daily" data-i18n="tabs.daily">Défis Quotidiens</button>
+      <button class="tab-link" data-target="sport" data-i18n="tabs.sport">Sport</button>
+      <button class="tab-link" data-target="menutool" data-i18n="tabs.menutool">Menu</button>
+      <button class="tab-link" data-target="anki" data-i18n="tabs.anki">Révisions</button>
+      <button class="tab-link" data-target="news" data-i18n="tabs.news">Actualités</button>
       <button class="tab-link" data-target="gantt" data-i18n="tabs.gantt">GANTT</button>
       <button class="tab-link" data-target="snake" data-i18n="tabs.snake">Snake</button>
       <button class="tab-link" data-target="trackirigo" data-i18n="tabs.track">Track'Irigo</button>
+      <button class="tab-link" data-target="patchnotes" data-i18n="tabs.patchnotes">Patch-Notes</button>
       <button class="tab-link tab-link--icon" data-target="settings" data-i18n-aria-label="tabs.settingsAria">
         <img src="settings_icon.png" alt="" aria-hidden="true" />
       </button>
     </nav>
   </header>
+
+  <div class="install-ios" id="install-ios" role="note" hidden>
+    <span data-i18n="install.iosText">Pour installer MyDesk : touche Partager, puis « Sur l'écran d'accueil ».</span>
+    <button type="button" id="install-ios-close" data-i18n-aria-label="install.close" aria-label="Fermer">✕</button>
+  </div>
+
+  <div class="storage-alert" id="storage-alert" role="alert" hidden>
+    <span class="storage-alert__text" id="storage-alert-text"></span>
+    <button type="button" id="storage-alert-export" data-i18n="storage.alertExport">Exporter une sauvegarde</button>
+    <button type="button" class="storage-alert__close" id="storage-alert-close" data-i18n-aria-label="storage.alertClose" aria-label="Fermer">✕</button>
+  </div>
 
   <main>
     <section id="home" class="tab-panel active">
@@ -57,6 +86,45 @@
         </div>
         <input type="file" id="import-input" accept="application/json" hidden>
         <p class="storage-status" id="storage-status"></p>
+        <p class="storage-usage" id="storage-usage"></p>
+      </div>
+
+      <div class="eco-panel" id="eco-panel">
+        <h2 data-i18n="eco.heading">🌱 Impact écologique (estimation)</h2>
+        <p class="eco-panel__month" id="eco-month"></p>
+        <ul class="eco-panel__parts" id="eco-parts"></ul>
+        <p id="eco-year"></p>
+        <p class="eco-panel__note" data-i18n="eco.note"></p>
+      </div>
+
+      <div class="sync-panel" id="sync-panel">
+        <h2 data-i18n="sync.heading">Synchronisation entre appareils</h2>
+        <p data-i18n="sync.description">
+          Synchronisez vos données entre votre téléphone et vos ordinateurs grâce à un Gist privé sur votre compte GitHub (gratuit).
+        </p>
+        <div class="storage-controls" id="sync-disconnected">
+          <ol class="sync-steps">
+            <li data-i18n="sync.step1">Créez un token GitHub avec uniquement la permission « gist ».</li>
+            <li data-i18n="sync.step2">Collez-le ci-dessous puis cliquez sur « Connecter ».</li>
+            <li data-i18n="sync.step3">Répétez sur chaque appareil avec le même token.</li>
+          </ol>
+          <a class="sync-token-link" href="https://github.com/settings/tokens/new?scopes=gist&amp;description=MyDesk%20Online%20Sync" target="_blank" rel="noopener noreferrer" data-i18n="sync.createToken">Créer un token GitHub ↗</a>
+          <label for="sync-token" data-i18n="sync.tokenLabel">Token GitHub</label>
+          <input type="password" id="sync-token" autocomplete="off" spellcheck="false" placeholder="ghp_…" data-i18n-placeholder="sync.tokenPlaceholder">
+          <div class="storage-buttons">
+            <button id="sync-connect" data-i18n="sync.connect">Connecter</button>
+          </div>
+        </div>
+        <div class="storage-controls" id="sync-connected" hidden>
+          <p id="sync-info"></p>
+          <div class="storage-buttons">
+            <button id="sync-now" data-i18n="sync.syncNow">Synchroniser maintenant</button>
+            <button id="sync-history" class="btn-secondary" data-i18n="restore.open">🕘 Historique / restaurer</button>
+            <button id="sync-disconnect" class="btn-secondary" data-i18n="sync.disconnect">Déconnecter</button>
+          </div>
+          <div id="sync-feed" class="sync-feed"></div>
+        </div>
+        <p class="storage-status" id="sync-status"></p>
       </div>
     </section>
 
@@ -191,6 +259,11 @@
           <div class="settings-grid" id="tab-visibility-settings"></div>
         </div>
 
+        <!-- ── Assistant de démarrage ─────────────────────────────── -->
+        <div class="settings-section">
+          <button type="button" id="onboarding-restart" class="btn-secondary" data-i18n="onboarding.restart">Relancer l’assistant de démarrage</button>
+        </div>
+
       </div>
     </section>
 
@@ -203,12 +276,19 @@
         </div>
         <div class="calendar-actions">
           <button id="today-button" data-i18n="calendar.today">Aujourd'hui</button>
+          <button id="ics-import" type="button" data-i18n="calendar.ics.importButton">Importer un .ics</button>
+          <input type="file" id="ics-input" accept=".ics,text/calendar" multiple hidden>
+          <button id="print-schedule" type="button" data-i18n="calendar.printing.button">Imprimer</button>
+          <span id="ics-status" class="ics-status" aria-live="polite"></span>
           <span class="hint" data-i18n="calendar.hint">Astuce : utilisez les flèches du clavier pour naviguer de semaine.</span>
         </div>
       </div>
+      <div class="calendar-conflicts" id="calendar-conflicts" hidden></div>
       <div class="calendar-content">
         <div class="calendar-grid" id="calendar-grid"></div>
         <aside class="event-types-panel">
+          <div class="calendar-goals" id="calendar-goals"></div>
+          <div class="calendar-reminders" id="calendar-reminders"></div>
           <h3 data-i18n="calendar.eventTypesTitle">Types d'évènements</h3>
           <div class="event-type-list" id="event-type-list"></div>
           <form class="event-type-form" id="event-type-form">
@@ -255,62 +335,75 @@
     </section>
 
     <section id="todo" class="tab-panel">
-      <div class="todo-header">
-        <button id="add-block" data-i18n="todo.addBlock">Ajouter un bloc</button>
-      </div>
       <div class="todo-blocks" id="todo-blocks"></div>
     </section>
 
     <section id="notes" class="tab-panel">
-      <div class="notes-layout">
-        <aside class="notes-sidebar">
-          <div class="notes-sidebar__header">
-            <h3 data-i18n="notes.title">Notes</h3>
-            <button id="notes-add-page" data-i18n="notes.addPage">Nouvelle page</button>
+      <div class="nt-app" id="notes-app">
+        <aside class="nt-side">
+          <div class="nt-side__head">
+            <div>
+              <h2 class="nt-side__title" data-i18n="notes.title">Notes</h2>
+              <p class="nt-side__count" id="notes-count"></p>
+            </div>
+            <button type="button" class="nt-new" id="notes-add-page" data-i18n-title="notes.addPageTitle" title="Créer une note"><span aria-hidden="true">＋</span> <span data-i18n="notes.addPage">Nouvelle note</span></button>
           </div>
-          <div class="notes-page-list" id="notes-page-list"></div>
-          <div class="notes-sidebar__actions">
-            <button id="notes-rename-page" data-i18n="notes.renamePage">Renommer</button>
-            <button id="notes-delete-page" data-i18n="notes.deletePage">Supprimer</button>
-          </div>
+          <label class="nt-search">
+            <span class="nt-search__icon" aria-hidden="true">⌕</span>
+            <input type="search" id="notes-search" autocomplete="off" data-i18n-placeholder="notes.search" placeholder="Rechercher dans les notes" data-i18n-aria-label="notes.search" aria-label="Rechercher dans les notes">
+          </label>
+          <div class="nt-list" id="notes-page-list" role="listbox" data-i18n-aria-label="notes.title" aria-label="Notes"></div>
         </aside>
-        <div class="notes-editor">
-          <div class="notes-toolbar" aria-label="Barre d'outils de mise en forme">
-            <button type="button" class="notes-tool" data-command="bold" data-i18n="notes.toolbar.bold" title="Gras">Gras</button>
-            <button type="button" class="notes-tool" data-command="italic" data-i18n="notes.toolbar.italic" title="Italique">Italique</button>
-            <button type="button" class="notes-tool" data-command="underline" data-i18n="notes.toolbar.underline" title="Souligner">Souligner</button>
-            <button type="button" class="notes-tool" data-command="strikeThrough" data-i18n="notes.toolbar.strike" title="Barré">Barré</button>
-            <button type="button" class="notes-tool" data-command="insertUnorderedList" data-i18n="notes.toolbar.bullet" title="Puces">Puces</button>
-            <button type="button" class="notes-tool" data-command="insertOrderedList" data-i18n="notes.toolbar.numbered" title="Liste numérotée">Liste numérotée</button>
-            <label class="notes-tool notes-tool--picker">
-              <span data-i18n="notes.toolbar.fontSize">Taille</span>
-              <select id="notes-font-size">
-                <option value="2">12px</option>
-                <option value="3" selected>16px</option>
-                <option value="4">18px</option>
-                <option value="5">24px</option>
-                <option value="6">32px</option>
-                <option value="7">48px</option>
-              </select>
-            </label>
-            <label class="notes-tool notes-tool--picker">
-              <span data-i18n="notes.toolbar.textColor">Couleur</span>
-              <input type="color" id="notes-text-color" value="#111827" aria-label="Couleur du texte" />
-            </label>
-            <label class="notes-tool notes-tool--picker">
-              <span data-i18n="notes.toolbar.highlight">Surligner</span>
-              <input type="color" id="notes-highlight" value="#fef08a" aria-label="Couleur de surlignage" />
-            </label>
+        <article class="nt-doc">
+          <header class="nt-doc__head">
+            <button type="button" class="nt-back" id="notes-back" data-i18n="notes.back">‹ Notes</button>
+            <button type="button" class="nt-emoji" id="notes-emoji" data-i18n-title="notes.emojiTitle" title="Choisir une icône">📝</button>
+            <input type="text" class="nt-title" id="notes-title" autocomplete="off" data-i18n-placeholder="notes.untitled" placeholder="Sans titre" data-i18n-aria-label="notes.titleLabel" aria-label="Titre de la note">
+            <div class="nt-doc__actions">
+              <button type="button" class="nt-icon-btn" id="notes-pin" aria-pressed="false" data-i18n-aria-label="notes.pin" aria-label="Épingler">📌</button>
+              <div class="nt-menu">
+                <button type="button" class="nt-icon-btn" id="notes-more" aria-haspopup="true" aria-expanded="false" data-i18n-title="notes.more" title="Plus d'actions">⋯</button>
+                <div class="nt-menu__panel" id="notes-menu" role="menu" hidden>
+                  <button type="button" role="menuitem" id="notes-duplicate" data-i18n="notes.duplicate">Dupliquer</button>
+                  <button type="button" role="menuitem" id="notes-copy" data-i18n="notes.copyText">Copier le texte</button>
+                  <button type="button" role="menuitem" id="notes-delete-page" class="nt-menu__danger" data-i18n="notes.deletePage">Supprimer la note</button>
+                </div>
+              </div>
+            </div>
+            <div class="nt-emoji-picker" id="notes-emoji-picker" hidden></div>
+          </header>
+          <div class="nt-toolbar" role="toolbar" data-i18n-aria-label="notes.toolbar.label" aria-label="Mise en forme">
+            <select id="notes-block" class="nt-block" data-i18n-title="notes.toolbar.block" title="Style du paragraphe">
+              <option value="p" data-i18n="notes.toolbar.paragraph">Texte</option>
+              <option value="h1" data-i18n="notes.toolbar.heading1">Titre</option>
+              <option value="h2" data-i18n="notes.toolbar.heading2">Sous-titre</option>
+              <option value="h3" data-i18n="notes.toolbar.heading3">Petit titre</option>
+              <option value="blockquote" data-i18n="notes.toolbar.quote">Citation</option>
+            </select>
+            <span class="nt-sep" aria-hidden="true"></span>
+            <button type="button" class="nt-tool" data-command="bold" data-i18n-title="notes.toolbar.bold" title="Gras (Ctrl+B)"><b>B</b></button>
+            <button type="button" class="nt-tool" data-command="italic" data-i18n-title="notes.toolbar.italic" title="Italique (Ctrl+I)"><i>I</i></button>
+            <button type="button" class="nt-tool" data-command="underline" data-i18n-title="notes.toolbar.underline" title="Souligné (Ctrl+U)"><u>U</u></button>
+            <button type="button" class="nt-tool" data-command="strikeThrough" data-i18n-title="notes.toolbar.strike" title="Barré"><s>S</s></button>
+            <span class="nt-sep" aria-hidden="true"></span>
+            <button type="button" class="nt-tool" data-command="insertUnorderedList" data-i18n-title="notes.toolbar.bullet" title="Liste à puces">•≡</button>
+            <button type="button" class="nt-tool" data-command="insertOrderedList" data-i18n-title="notes.toolbar.numbered" title="Liste numérotée">1≡</button>
+            <button type="button" class="nt-tool nt-tool--action" id="notes-checklist" data-i18n-title="notes.toolbar.checklist" title="Cases à cocher">☑</button>
+            <button type="button" class="nt-tool nt-tool--action" id="notes-link" data-i18n-title="notes.toolbar.link" title="Lien">🔗</button>
+            <span class="nt-sep" aria-hidden="true"></span>
+            <span class="nt-swatches" id="notes-highlights" data-i18n-title="notes.toolbar.highlight" title="Surligner"></span>
+            <span class="nt-swatches nt-swatches--text" id="notes-colors" data-i18n-title="notes.toolbar.textColor" title="Couleur du texte"></span>
+            <button type="button" class="nt-tool nt-tool--action" id="notes-clear" data-i18n-title="notes.toolbar.clear" title="Effacer la mise en forme">T̸</button>
+            <button type="button" class="nt-tool nt-tool--card" id="notes-card" data-i18n-title="notes.toolbar.cardTitle" title="Créer une fiche de Révisions avec la sélection"><span data-i18n="notes.toolbar.card">🧠 Fiche</span></button>
           </div>
-          <div
-            class="notes-editor__content"
-            id="notes-editor"
-            contenteditable="true"
-            data-i18n-placeholder="notes.placeholder"
-            data-placeholder="Commencez à écrire..."
-          ></div>
-          <p class="hint" data-i18n="notes.hint">Ajoutez plusieurs pages et mettez vos notes en forme.</p>
-        </div>
+          <div class="nt-paper">
+            <div class="nt-content" id="notes-editor" contenteditable="true" spellcheck="true" data-i18n-placeholder="notes.placeholder" data-placeholder="Écris ici…"></div>
+          </div>
+          <footer class="nt-doc__foot">
+            <span id="notes-stats"></span>
+            <span id="notes-saved"></span>
+          </footer>
+        </article>
       </div>
     </section>
 
@@ -359,6 +452,56 @@
       </div>
     </section>
 
+    <section id="sport" class="tab-panel">
+      <div class="sport-layout">
+        <aside class="sport-sidebar">
+          <h3 data-i18n="sport.sessionsTitle">Séances</h3>
+          <ul class="sport-session-list" id="sport-session-list"></ul>
+          <div class="sport-sidebar__actions">
+            <button id="sport-add-session" type="button" data-i18n="sport.addSession">Nouvelle séance</button>
+            <button id="sport-load-program" type="button" class="btn-secondary" data-i18n="sport.loadProgram">Séances préfaites</button>
+            <button id="sport-history" type="button" class="btn-secondary" data-i18n="sport.historyButton">📈 Historique et régularité</button>
+          </div>
+          <p class="sport-status" id="sport-status" aria-live="polite"></p>
+        </aside>
+        <div class="sport-main" id="sport-main"></div>
+      </div>
+    </section>
+
+    <section id="menutool" class="tab-panel">
+      <div class="menutool-bar">
+        <nav class="menutool-vues" id="menutool-vues" aria-label="Menu">
+          <button type="button" class="menutool-vue" data-vue="menus" data-i18n="menutool.vues.menus">Recettes</button>
+          <button type="button" class="menutool-vue" data-vue="courses" data-i18n="menutool.vues.courses">Courses</button>
+          <button type="button" class="menutool-vue" data-vue="planning" data-i18n="menutool.vues.planning">À cuisiner</button>
+          <button type="button" class="menutool-vue" data-vue="stock" data-i18n="menutool.vues.stock">Stock</button>
+          <button type="button" class="menutool-vue" data-vue="catalogue" data-i18n="menutool.vues.catalogue">Catalogue</button>
+        </nav>
+        <div class="menutool-meta">
+          <span class="menutool-info" id="menutool-info"></span>
+          <span class="menutool-status" id="menutool-status" aria-live="polite"></span>
+          <button type="button" id="menutool-refresh" class="menutool-refresh" data-i18n-title="menutool.refresh" title="Vérifier les mises à jour" aria-label="Vérifier les mises à jour">↻</button>
+        </div>
+      </div>
+      <div class="menutool-frame" id="menutool-frame"></div>
+    </section>
+
+    <section id="anki" class="tab-panel">
+      <div class="anki-app">
+        <nav class="anki-nav" id="anki-nav"></nav>
+        <p class="anki-status" id="anki-status" aria-live="polite"></p>
+        <div class="anki-main" id="anki-main"></div>
+      </div>
+    </section>
+
+    <section id="patchnotes" class="tab-panel">
+      <div class="patchnotes-app" id="patchnotes-app"></div>
+    </section>
+
+    <section id="news" class="tab-panel">
+      <div class="news-app" id="news-app"></div>
+    </section>
+
     <section id="gantt" class="tab-panel">
       <div class="gantt-layout">
         <aside class="gantt-sidebar">
@@ -398,37 +541,41 @@
       </div>
     </section>
     <section id="snake" class="tab-panel">
-      <div class="snake-layout">
-        <div class="snake-header">
-          <div>
-            <h2 data-i18n="snake.title">Snake</h2>
-            <p class="hint" data-i18n="snake.subtitle">Attrapez les pommes et évitez les collisions.</p>
-          </div>
-          <div class="snake-controls">
-            <button id="snake-start" data-i18n="snake.start">Démarrer</button>
-            <button id="snake-pause" data-i18n="snake.pause">Pause</button>
-            <button id="snake-reset" data-i18n="snake.reset">Réinitialiser</button>
-          </div>
-        </div>
-        <div class="snake-panel">
-          <div class="snake-board">
-            <canvas id="snake-canvas" width="420" height="420" role="img" aria-label="Snake"></canvas>
-          </div>
-          <div class="snake-sidebar">
-            <div class="snake-scoreboard">
-              <div class="snake-score">
-                <span data-i18n="snake.score">Score</span>
-                <strong id="snake-score">0</strong>
-              </div>
-              <div class="snake-score">
-                <span data-i18n="snake.best">Meilleur score</span>
-                <strong id="snake-best">0</strong>
-              </div>
+      <div class="snake-app">
+        <div class="snake-main">
+          <div class="snake-hud">
+            <div class="snake-hud__title">
+              <h2 data-i18n="snake.title">Snake</h2>
+              <p class="hint" data-i18n="snake.subtitle">Mange, grandis, ne te mords pas la queue.</p>
             </div>
-            <div id="snake-status" class="snake-status" data-i18n="snake.status.ready">Prêt à jouer</div>
-            <p class="hint" data-i18n="snake.controls">Utilisez les flèches ou ZQSD pour diriger le serpent.</p>
+            <div class="snake-hud__stats">
+              <div class="snake-chip snake-chip--score" id="snake-score-chip"><span aria-hidden="true">🍎</span><strong id="snake-score">0</strong></div>
+              <div class="snake-chip" id="snake-best-chip"><span aria-hidden="true">🏆</span><strong id="snake-best">0</strong></div>
+              <div class="snake-chip snake-chip--timer" id="snake-timer-chip" hidden><span aria-hidden="true">⏱</span><strong id="snake-timer">60</strong></div>
+              <div class="snake-combo" id="snake-combo" aria-hidden="true"></div>
+            </div>
+            <div class="snake-hud__actions">
+              <button type="button" class="snake-icon-btn" id="snake-pause">⏸</button>
+              <button type="button" class="snake-icon-btn" id="snake-sound">🔊</button>
+              <button type="button" class="snake-icon-btn" id="snake-music">🎵</button>
+              <button type="button" class="snake-icon-btn" id="snake-menu">☰</button>
+            </div>
           </div>
+          <div class="snake-board-wrap" id="snake-board-wrap">
+            <div class="snake-stage" id="snake-stage">
+              <canvas id="snake-canvas" role="img" data-i18n-aria-label="snake.canvasLabel" aria-label="Snake"></canvas>
+              <div class="snake-overlay" id="snake-overlay"></div>
+            </div>
+          </div>
+          <div class="snake-dpad" id="snake-dpad">
+            <button type="button" class="snake-dpad__btn snake-dpad__btn--up" data-dir="up">▲</button>
+            <button type="button" class="snake-dpad__btn snake-dpad__btn--left" data-dir="left">◀</button>
+            <button type="button" class="snake-dpad__btn snake-dpad__btn--right" data-dir="right">▶</button>
+            <button type="button" class="snake-dpad__btn snake-dpad__btn--down" data-dir="down">▼</button>
+          </div>
+          <div class="snake-sr" id="snake-status" aria-live="polite"></div>
         </div>
+        <aside class="snake-side" id="snake-side"></aside>
       </div>
     </section>
     <section id="trackirigo" class="tab-panel">
@@ -453,22 +600,41 @@
           <input type="text" id="event-title" required>
         </label>
         <label>
+          <span data-i18n="calendar.eventModal.locationLabel">Lieu</span>
+          <input type="text" id="event-location" list="event-location-list" autocomplete="off" placeholder="ex. Amphi B, salle 204…" data-i18n-placeholder="calendar.eventModal.locationPlaceholder">
+          <datalist id="event-location-list"></datalist>
+        </label>
+        <label>
           <span data-i18n="calendar.eventModal.datetimeLabel">Date et heure</span>
           <input type="datetime-local" id="event-datetime" required>
         </label>
-        <label>
-          <span data-i18n="calendar.eventModal.durationLabel">Durée (minutes)</span>
-          <input type="number" id="event-duration" min="15" step="15" value="60">
-        </label>
+        <div class="event-time-row">
+          <label>
+            <span data-i18n="calendar.eventModal.endTimeLabel">Heure de fin</span>
+            <input type="time" id="event-end-time" step="60">
+          </label>
+          <label>
+            <span data-i18n="calendar.eventModal.durationLabel">Durée (minutes)</span>
+            <input type="number" id="event-duration" min="1" step="1" value="60">
+          </label>
+        </div>
         <label>
           <span data-i18n="calendar.eventModal.typeLabel">Type d'évènement</span>
           <select id="event-type">
             <option value="" data-i18n="calendar.eventModal.typeNone">Aucun</option>
           </select>
         </label>
+        <label hidden>
+          <span data-i18n="goals.eventGoal">Compte pour l'objectif</span>
+          <select id="event-goal"></select>
+        </label>
         <label>
           <span data-i18n="calendar.eventModal.colorLabel">Couleur</span>
           <input type="color" id="event-color" value="#10b981">
+        </label>
+        <label>
+          <span data-i18n="reminders.eventLabel">Rappel</span>
+          <select id="event-reminder"></select>
         </label>
         <label>
           <span data-i18n="calendar.eventModal.recurrenceLabel">Répétition</span>
@@ -480,6 +646,13 @@
             <option value="yearly" data-i18n="calendar.eventModal.recurrence.yearly">Annuelle</option>
           </select>
         </label>
+        <label id="event-scope-row" hidden>
+          <span data-i18n="calendar.eventModal.scopeLabel">Appliquer à</span>
+          <select id="event-scope">
+            <option value="one" data-i18n="calendar.eventModal.scopeOne">Cette occurrence seulement</option>
+            <option value="all" data-i18n="calendar.eventModal.scopeAll">Toutes les occurrences</option>
+          </select>
+        </label>
         <div class="modal-actions">
           <button type="submit" data-i18n="calendar.eventModal.save">Enregistrer</button>
           <button type="button" id="cancel-event" data-i18n="calendar.eventModal.cancel">Annuler</button>
@@ -488,7 +661,92 @@
     </div>
   </div>
 
+  <div class="modal" id="delete-occurrence-modal" hidden>
+    <div class="modal-content">
+      <h3 data-i18n="calendar.deleteRepeating.title">Supprimer un évènement répété</h3>
+      <div class="delete-occurrence-choices">
+        <button type="button" data-delete-scope="one" data-i18n="calendar.deleteRepeating.one">Cette occurrence seulement</button>
+        <button type="button" data-delete-scope="following" data-i18n="calendar.deleteRepeating.following">Cette occurrence et les suivantes</button>
+        <button type="button" data-delete-scope="all" class="danger" data-i18n="calendar.deleteRepeating.all">Toutes les occurrences</button>
+        <button type="button" id="delete-occurrence-cancel" class="btn-secondary" data-i18n="calendar.deleteRepeating.cancel">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="undo-toast" id="undo-toast" role="status" hidden>
+    <span id="undo-toast-text"></span>
+    <button type="button" id="undo-toast-button" data-i18n="undo.undo">Annuler</button>
+  </div>
+
+  <div class="modal" id="print-modal" hidden>
+    <div class="modal-content">
+      <h3 data-i18n="calendar.printing.title">Imprimer l'emploi du temps</h3>
+      <form id="print-form">
+        <label>
+          <span data-i18n="calendar.printing.firstWeek">À partir de la semaine du</span>
+          <input type="date" id="print-first-week" required>
+        </label>
+        <label>
+          <span data-i18n="calendar.printing.weekCount">Nombre de semaines</span>
+          <input type="number" id="print-week-count" min="1" max="52" step="1" value="1">
+        </label>
+        <fieldset class="print-week-fieldset">
+          <legend data-i18n="calendar.printing.weeksToPrint">Semaines à imprimer</legend>
+          <div class="print-week-list" id="print-week-list"></div>
+        </fieldset>
+        <label class="print-inline-option">
+          <input type="checkbox" id="print-include-weekend" checked>
+          <span data-i18n="calendar.printing.includeWeekend">Inclure le week-end</span>
+        </label>
+        <p class="print-error" id="print-error" aria-live="polite"></p>
+        <div class="modal-actions">
+          <button type="submit" data-i18n="calendar.printing.print">Imprimer</button>
+          <button type="button" id="print-cancel" data-i18n="calendar.printing.cancel">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <object id="local-version-source" type="application/json" data="version.json" aria-hidden="true" hidden></object>
-  <script src="script.js" defer></script>
+  <script src="sync.js?v=92" defer></script>
+  <script src="calendar-feed.js?v=92" defer></script>
+  <script src="restore.js?v=92" defer></script>
+  <script src="calendar-conflicts.js?v=92" defer></script>
+  <script src="calendar-goals.js?v=92" defer></script>
+  <script src="calendar-reminders.js?v=92" defer></script>
+  <script src="ical.js?v=92" defer></script>
+  <script src="print.js?v=92" defer></script>
+  <script src="undo.js?v=92" defer></script>
+  <script src="sport-library.js?v=92" defer></script>
+  <script src="sport.js?v=92" defer></script>
+  <script src="sport-guided.js?v=92" defer></script>
+  <script src="sport-history.js?v=92" defer></script>
+  <script src="snake.js?v=92" defer></script>
+  <script src="menu-engine.js?v=92" defer></script>
+  <script src="menu.js?v=92" defer></script>
+  <script src="install.js?v=92" defer></script>
+  <script src="vendor/ts-fsrs.umd.js?v=92" defer></script>
+  <script src="anki.js?v=92" defer></script>
+  <script src="news.js?v=92" defer></script>
+  <script src="tab-order.js?v=92" defer></script>
+  <script src="patch-notes.js?v=92" defer></script>
+  <script src="todo.js?v=92" defer></script>
+  <script src="onboarding.js?v=92" defer></script>
+  <script src="eco.js?v=92" defer></script>
+  <script src="translations.js?v=92" defer></script>
+  <script src="calendar.js?v=92" defer></script>
+  <script src="mindmap.js?v=92" defer></script>
+  <script src="gantt.js?v=92" defer></script>
+  <script src="notes.js?v=92" defer></script>
+  <script src="daily-challenges.js?v=92" defer></script>
+  <script src="appearance.js?v=92" defer></script>
+  <script src="script.js?v=92" defer></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch((error) => console.warn('Service worker indisponible', error));
+      });
+    }
+  </script>
 </body>
 </html>

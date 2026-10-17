@@ -1,0 +1,74 @@
+# Onglet Actualité : récupère les flux RSS toutes les heures et rédige
+# le briefing (matin et soir) avec Gemini (secret GEMINI_API_KEY). Les données sont
+# publiées seules dans la branche « news » (un unique commit remplacé
+# à chaque passage, pour ne pas alourdir le dépôt).
+name: Actualité
+
+on:
+  schedule:
+    # 4 passages prévus par heure : GitHub retarde ou saute souvent les
+    # tâches planifiées (le 05/10, aucun passage entre 4 h et 9 h, donc pas
+    # de résumé du matin). Un passage sans rien de neuf ne coûte rien
+    # (dépôt public) et ne rappelle pas Gemini.
+    - cron: '8,23,38,53 * * * *'
+  workflow_dispatch:
+    inputs:
+      briefing:
+        description: 'Refaire le briefing maintenant'
+        type: boolean
+        default: false
+      day:
+        description: 'Jour d’un briefing passé à refaire (AAAA-MM-JJ, vide = créneau en cours)'
+        type: string
+        default: ''
+      slot:
+        description: 'Créneau de ce jour (matin ou soir)'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Récupérer les données existantes
+        run: |
+          mkdir -p news-data
+          if git fetch --depth=1 origin news; then
+            git archive FETCH_HEAD | tar -x -C news-data
+            echo "OLD_TREE=$(git rev-parse 'FETCH_HEAD^{tree}')" >> "$GITHUB_ENV"
+          fi
+
+      - name: Lire les flux et rédiger le briefing
+        run: node .github/news-bot/news.mjs news-data
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FORCE_BRIEFING: ${{ inputs.briefing }}
+          FORCE_DAY: ${{ inputs.day }}
+          FORCE_SLOT: ${{ inputs.slot }}
+
+      - name: Publier dans la branche news
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          export GIT_INDEX_FILE="$RUNNER_TEMP/news-index"
+          git --git-dir="$PWD/.git" --work-tree="$PWD/news-data" -C news-data add -A
+          tree=$(git write-tree)
+          if [ "$tree" = "${OLD_TREE:-}" ]; then
+            echo "Rien de neuf."
+            exit 0
+          fi
+          commit=$(git commit-tree "$tree" -m "Actualité : mise à jour")
+          git push --force origin "$commit:refs/heads/news"

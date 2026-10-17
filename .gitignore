@@ -1,2 +1,4 @@
 mydesk-data.json
-*.json
+mydesk-export-*.json
+*.zip
+menu-test-data/
